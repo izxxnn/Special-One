@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>A Special Question for You ✨</title>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      min-height: 100vh;
+      width: 100vw;
+      background: linear-gradient(135deg, #ffd1dc 0%, #ffe6eb 50%, #fbc2eb 100%);
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow-x: hidden;
+      overflow-y: auto;
+      padding: 20px 15px 50px 15px;
+      position: relative;
+    }
+
+    /* Floating background hearts */
+    .heart-bg {
+      position: fixed;
+      top: -10vh;
+      font-size: 20px;
+      opacity: 0.6;
+      animation: fall linear forwards;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(115vh) rotate(360deg);
+      }
+    }
+
+    .card {
+      position: relative;
+      z-index: 10;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      border-radius: 28px;
+      padding: 30px 22px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 20px 45px rgba(235, 87, 137, 0.22);
+      border: 2px solid rgba(255, 255, 255, 0.9);
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #ffe3ec;
+      color: #e63968;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      padding: 6px 14px;
+      border-radius: 50px;
+      margin-bottom: 15px;
+    }
+
+    .main-emoji {
+      font-size: 70px;
+      line-height: 1;
+      margin-bottom: 12px;
+      display: inline-block;
+      animation: float 2.6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 800;
+      color: #2b2b2b;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+
+    .subtitle {
+      font-family: 'Dancing Script', cursive;
+      font-size: 22px;
+      color: #d81b60;
+      margin-bottom: 22px;
+    }
+
+    .reaction-text {
+      min-height: 22px;
+      font-size: 13px;
+      color: #e91e63;
+      font-weight: 600;
+      margin-bottom: 18px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-zone {
+      position: relative;
+      min-height: 130px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .btn-yes {
+      background: linear-gradient(135deg, #ff4081, #e91e63);
+      color: #fff;
+      border: none;
+      font-size: 16px;
+      font-weight: 700;
+      padding: 13px 28px;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 10px 22px rgba(233, 30, 99, 0.4);
+      transition: transform 0.2s ease, font-size 0.2s ease;
+      z-index: 5;
+    }
+
+    .btn-no {
+      background: #f1f3f5;
+      color: #555;
+      border: 1px solid #dee2e6;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 12px 24px;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: left 0.2s ease, top 0.2s ease;
+      position: relative;
+      z-index: 6;
+      touch-action: none;
+    }
+
+    /* Success Card */
+    .success-container {
+      display: none;
+      animation: popIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    @keyframes popIn {
+      0% { opacity: 0; transform: scale(0.85); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    .agenda-box {
+      background: #fff5f8;
+      border: 1.5px dashed #ff94b4;
+      border-radius: 18px;
+      padding: 16px 12px;
+      margin: 18px 0 24px 0;
+      text-align: left;
+    }
+
+    .agenda-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #d81b60;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .agenda-item {
+      font-size: 13px;
+      color: #495057;
+      margin: 5px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Clickable Link Button */
+    .insta-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      background: linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+      color: #ffffff !important;
+      text-decoration: none !important;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 16px 14px;
+      border-radius: 18px;
+      box-shadow: 0 10px 25px rgba(220, 39, 67, 0.45);
+      cursor: pointer;
+      line-height: 1.3;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+      z-index: 20;
+    }
+
+    .insta-btn:active {
+      transform: scale(0.97);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Screen 1: Question -->
+  <div class="card" id="questionCard">
+    <div class="badge">Question of the Day ✨</div>
+    <div class="main-emoji" id="questionEmoji">☕🌸</div>
+    <h1>Coffee & Cute Talks with me?</h1>
+    <div class="subtitle">Just you, me & a lot of laughs...</div>
+
+    <div class="reaction-text" id="reactionText">Take your time, no pressure 😉</div>
+
+    <div class="btn-zone" id="btnZone">
+      <button class="btn-yes" id="yesBtn" onclick="celebrateYes()">YES! 🥰</button>
+      <button class="btn-no" id="noBtn">No 🙈</button>
+    </div>
+  </div>
+
+  <!-- Screen 2: Success Confirmation -->
+  <div class="card success-container" id="successCard">
+    <div class="main-emoji">🎉🥳</div>
+    <div class="badge" style="background:#e8f5e9; color:#2e7d32;">Official Confirmation 💖</div>
+    <h1>YAYYY! It's a Date!</h1>
+    <div class="subtitle">Can't wait to see your pretty smile! 🌸</div>
+
+    <div class="agenda-box">
+      <div class="agenda-title">Date Agenda finalized: 📋</div>
+      <div class="agenda-item">☕ Warm Coffee & Sweet Talks</div>
+      <div class="agenda-item">📸 A lot of cute memories together</div>
+      <div class="agenda-item">✨ Good vibes only!</div>
+    </div>
+
+    <!-- Direct Instagram Link -->
+    <a href="https://www.instagram.com/just_ni_07?cplk=MXM1dDI5N2s3djI1NA==" 
+       target="_blank" 
+       rel="noopener noreferrer" 
+       class="insta-btn">
+      <span>Do you wanna know who is my beautiful love? ✨💖</span>
+    </a>
+  </div>
+
+  <script>
+    // Falling Hearts Background Animation
+    function createHeart() {
+      const heart = document.createElement('div');
+      heart.className = 'heart-bg';
+      const emojis = ['🌸', '✨', '💖', '☕', '🌷'];
+      heart.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+      heart.style.left = Math.random() * 100 + 'vw';
+      heart.style.animationDuration = (Math.random() * 3 + 4) + 's';
+      heart.style.fontSize = (Math.random() * 14 + 16) + 'px';
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 7000);
+    }
+    setInterval(createHeart, 600);
+
+    // Runaway No Button Logic
+    const noBtn = document.getElementById('noBtn');
+    const yesBtn = document.getElementById('yesBtn');
+    const reactionText = document.getElementById('reactionText');
+    const btnZone = document.getElementById('btnZone');
+
+    const playfulLines = [
+      "Arre button toh bhag gaya! 😂",
+      "Galat button daba rahi ho! 🙈",
+      "No option out of service hai 😌",
+      "Soch lo ek baar aur... 🥺",
+      "YES button bol raha hai mujhe click karo! ✨"
+    ];
+
+    let noClickCount = 0;
+    let yesScale = 1;
+
+    function moveNoButton(e) {
+      if (e) e.preventDefault();
+      noClickCount++;
+
+      // Make Yes button grow
+      yesScale += 0.18;
+      yesBtn.style.transform = `scale(${yesScale})`;
+
+      // Change playful text
+      reactionText.innerText = playfulLines[noClickCount % playfulLines.length];
+
+      // Random position inside container
+      const zoneRect = btnZone.getBoundingClientRect();
+      const maxX = zoneRect.width - noBtn.offsetWidth - 20;
+      const maxY = zoneRect.height - noBtn.offsetHeight;
+
+      const randomX = Math.max(10, Math.floor(Math.random() * maxX));
+      const randomY = Math.max(5, Math.floor(Math.random() * (maxY > 10 ? maxY : 60)));
+
+      noBtn.style.position = 'absolute';
+      noBtn.style.left = `${randomX}px`;
+      noBtn.style.top = `${randomY}px`;
+    }
+
+    noBtn.addEventListener('mouseenter', moveNoButton);
+    noBtn.addEventListener('touchstart', moveNoButton, { passive: false });
+    noBtn.addEventListener('click', moveNoButton);
+
+    // Celebrate Function
+    function celebrateYes() {
+      document.getElementById('questionCard').style.display = 'none';
+      const successCard = document.getElementById('successCard');
+      successCard.style.display = 'block';
+
+      // Confetti burst
+      const end = Date.now() + 3 * 1000;
+      const colors = ['#ff4081', '#e91e63', '#ffeb3b', '#00e676'];
+
+      (function frame() {
+        confetti({
+          particleCount: 4,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 },
+          colors: colors
+        });
+        confetti({
+          particleCount: 4,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 },
+          colors: colors
+        });
+
+        if (Date.now() < end) {
+          requestAnimationFrame(frame);
+        }
+      }());
+    }
+  </script>
+</body>
+</html>
