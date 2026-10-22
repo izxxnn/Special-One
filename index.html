@@ -636,28 +636,43 @@
     const game1Status = document.getElementById('game1Status');
 
     function jumpHeart() {
-      const maxX = heartArena.clientWidth - 50;
-      const maxY = heartArena.clientHeight - 50;
-      movingHeart.style.left = (Math.floor(Math.random() * maxX) + 25) + 'px';
-      movingHeart.style.top = (Math.floor(Math.random() * maxY) + 25) + 'px';
+      const arenaW = heartArena.clientWidth || 300;
+      const arenaH = heartArena.clientHeight || 230;
+
+      const maxX = Math.max(10, arenaW - 70);
+      const maxY = Math.max(10, arenaH - 70);
+
+      const rx = Math.floor(Math.random() * maxX) + 35;
+      const ry = Math.floor(Math.random() * maxY) + 35;
+
+      movingHeart.style.display = 'block';
+      movingHeart.style.left = rx + 'px';
+      movingHeart.style.top = ry + 'px';
     }
-    jumpHeart();
+
+    setTimeout(jumpHeart, 250);
 
     function onHeartClick(e) {
-      if (e) e.stopPropagation();
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
       heartsCaught++;
-      game1Status.innerText = `Hearts Caught: ${heartsCaught} / 5`;
+      game1Status.innerText = "Hearts Caught: " + heartsCaught + " / 5";
       confetti({ particleCount: 15, spread: 45, origin: { y: 0.6 } });
 
       if (heartsCaught >= 5) {
         movingHeart.style.display = 'none';
+        game1Status.innerText = "Hearts Caught: 5 / 5 🎉";
         setTimeout(() => goToStage(2), 700);
       } else {
         jumpHeart();
       }
     }
+
     movingHeart.addEventListener('click', onHeartClick);
-    movingHeart.addEventListener('touchstart', (e) => { e.preventDefault(); onHeartClick(e); });
+    movingHeart.addEventListener('touchstart', onHeartClick, { passive: false });
+
 
     /* GAME 2 */
     let meterScore = 0;
