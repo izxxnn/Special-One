@@ -3,11 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>A Special Journey For You ✨</title>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <title>Our Multiplayer 3D Museum & Cinema 🏛️✨</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- Three.js 3D Engine & PeerJS WebRTC P2P CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -16,811 +21,1001 @@
       user-select: none;
       -webkit-tap-highlight-color: transparent;
     }
-
-    body {
-      min-height: 100vh;
-      width: 100vw;
-      background: linear-gradient(135deg, #ffeef2 0%, #ffd6e0 50%, #fbc2eb 100%);
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #090a0f;
       font-family: 'Poppins', sans-serif;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 15px;
-      overflow-x: hidden;
-      overflow-y: auto;
-      position: relative;
     }
-
-    /* Video Fullscreen Player */
-    .video-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
+    #canvas3d {
       width: 100vw;
       height: 100vh;
-      background: #000;
-      z-index: 9999;
-      display: none;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .video-modal video {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      background: #000;
-    }
-
-    .skip-btn {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: rgba(255, 255, 255, 0.25);
-      backdrop-filter: blur(8px);
-      color: #fff;
-      border: 1px solid rgba(255, 255, 255, 0.4);
-      padding: 6px 14px;
-      border-radius: 50px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      z-index: 10000;
-    }
-
-    .bg-petal {
-      position: fixed;
-      top: -10vh;
-      font-size: 20px;
-      opacity: 0.5;
-      pointer-events: none;
-      animation: floatDown linear forwards;
-      z-index: 1;
-    }
-
-    @keyframes floatDown {
-      to { transform: translateY(115vh) rotate(360deg); }
-    }
-
-    .progress-bar-container {
-      width: 100%;
-      max-width: 400px;
-      margin-bottom: 14px;
-      display: none;
-      flex-direction: column;
-      gap: 6px;
-      z-index: 10;
-    }
-
-    .progress-label {
-      display: flex;
-      justify-content: space-between;
-      font-size: 12px;
-      font-weight: 700;
-      color: #b83280;
-    }
-
-    .progress-track {
-      height: 8px;
-      background: rgba(255, 255, 255, 0.7);
-      border-radius: 20px;
-      overflow: hidden;
-    }
-
-    .progress-fill {
-      height: 100%;
-      width: 16%;
-      background: linear-gradient(90deg, #ff4081, #d81b60);
-      border-radius: 20px;
-      transition: width 0.4s ease;
-    }
-
-    .stage-card {
-      position: relative;
-      z-index: 10;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(14px);
-      border-radius: 26px;
-      padding: 26px 20px;
-      width: 100%;
-      max-width: 400px;
-      box-shadow: 0 18px 40px rgba(220, 50, 110, 0.18);
-      border: 2px solid rgba(255, 255, 255, 0.85);
-      text-align: center;
-      display: none;
-      animation: fadeIn 0.4s ease forwards;
-    }
-
-    .stage-card.active {
       display: block;
     }
 
-    @keyframes fadeIn {
-      0% { opacity: 0; transform: scale(0.92); }
-      100% { opacity: 1; transform: scale(1); }
-    }
-
-    .pill-badge {
-      display: inline-block;
-      background: #ffe3ec;
-      color: #e63968;
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      padding: 5px 14px;
-      border-radius: 50px;
-      margin-bottom: 12px;
-    }
-
-    h2 {
-      font-size: 21px;
-      font-weight: 800;
-      color: #2b2b2b;
-      margin-bottom: 6px;
-      line-height: 1.3;
-    }
-
-    p.desc {
-      font-size: 13.5px;
-      color: #666;
-      margin-bottom: 18px;
-      line-height: 1.4;
-    }
-
-    .action-btn {
-      background: linear-gradient(135deg, #ff4081, #d81b60);
-      color: #fff;
-      border: none;
-      font-size: 15px;
-      font-weight: 700;
-      padding: 13px 26px;
-      border-radius: 50px;
-      cursor: pointer;
-      box-shadow: 0 8px 18px rgba(233, 30, 99, 0.35);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      width: 100%;
-    }
-
-    .heart-arena {
-      position: relative;
-      height: 230px;
-      background: #fff5f8;
-      border: 2px dashed #ff94b4;
-      border-radius: 20px;
-      overflow: hidden;
-      margin-bottom: 14px;
-      touch-action: manipulation;
-    }
-
-    .clickable-target {
-      position: absolute;
-      font-size: 38px;
-      cursor: pointer;
-      line-height: 1;
-      transform: translate(-50%, -50%);
-    }
-
-    .tap-meter-heart {
-      font-size: 75px;
-      cursor: pointer;
-      display: inline-block;
-      margin: 8px 0;
-      transition: transform 0.1s;
-    }
-
-    .meter-bar-track {
-      height: 22px;
-      background: #f1e2e7;
-      border-radius: 20px;
-      overflow: hidden;
-      margin: 14px 0;
-      border: 2px solid #ffb6c1;
-      position: relative;
-    }
-
-    .meter-bar-fill {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #ff8da1, #e91e63);
-      border-radius: 20px;
-      transition: width 0.15s ease-out;
-    }
-
-    .meter-text {
-      position: absolute;
-      width: 100%;
-      top: 2px;
-      left: 0;
-      font-size: 12px;
-      font-weight: 700;
-      color: #4a154b;
-    }
-
-    .memory-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin: 15px 0;
-    }
-
-    .memory-tile {
-      height: 70px;
-      background: #fff0f5;
-      border: 2px solid #ffccd5;
-      border-radius: 16px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 28px;
-      cursor: pointer;
-    }
-
-    .memory-tile.flipped {
-      background: #fff;
-      border-color: #ff4081;
-    }
-
-    .memory-tile.matched {
-      background: #e8f5e9;
-      border-color: #4caf50;
-      cursor: default;
-    }
-
-    .scratch-box {
-      position: relative;
-      height: 160px;
-      background: #fff5f8;
-      border-radius: 20px;
-      border: 2px dashed #ff4081;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 15px;
-      margin: 14px 0;
-      cursor: pointer;
-    }
-
-    .scratch-cover {
+    /* Lobby Room Joiner */
+    #lobbyScreen {
       position: absolute;
       inset: 0;
-      background: linear-gradient(135deg, #ff4081, #9c27b0);
-      color: white;
+      background: radial-gradient(circle at center, #1a1c2b 0%, #06070a 100%);
+      z-index: 100;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      gap: 6px;
-      border-radius: 18px;
-      transition: opacity 0.5s ease;
+      color: #fff;
+      padding: 24px;
+      text-align: center;
+    }
+    .lobby-box {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 24px;
+      border-radius: 24px;
+      backdrop-filter: blur(14px);
+      max-width: 340px;
+      width: 100%;
+    }
+    .lobby-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+      color: #fff;
+      border: none;
+      padding: 13px;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 15px;
+      margin-top: 12px;
+      cursor: pointer;
     }
 
-    .scratch-cover.revealed {
-      opacity: 0;
+    /* Top HUD / Multiplayer Status */
+    #topHud {
+      position: absolute;
+      top: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 16, 25, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      color: #fff;
+      padding: 8px 18px;
+      border-radius: 30px;
+      font-size: 12px;
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: #2ed573;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #2ed573;
+    }
+
+    /* Mobile Joystick */
+    #joystickZone {
+      position: absolute;
+      bottom: 25px;
+      left: 25px;
+      width: 110px;
+      height: 110px;
+      z-index: 30;
+      touch-action: none;
+    }
+    .joystick-base {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.07);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      backdrop-filter: blur(8px);
+    }
+    .joystick-stick {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 45px;
+      height: 45px;
+      background: linear-gradient(135deg, #ff758c, #ff7eb3);
+      border-radius: 50%;
+      box-shadow: 0 4px 15px rgba(255, 117, 140, 0.6);
       pointer-events: none;
     }
 
-    .options-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin: 15px 0;
-    }
-
-    .choice-card {
-      background: #fff;
-      border: 2px solid #ffd6e0;
-      border-radius: 16px;
-      padding: 12px 8px;
-      font-size: 13px;
-      font-weight: 600;
-      color: #333;
-      cursor: pointer;
+    /* Right Action Deck (Mic, Emotes, Sit) */
+    .action-dock {
+      position: absolute;
+      bottom: 25px;
+      right: 20px;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: 6px;
+      gap: 12px;
+      z-index: 35;
     }
-
-    .choice-card.selected {
-      border-color: #ff4081;
-      background: #ffe3ec;
-      color: #c2185b;
-    }
-
-    .proposal-zone {
-      position: relative;
-      min-height: 140px;
+    .dock-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.25);
+      background: rgba(20, 22, 34, 0.85);
+      backdrop-filter: blur(10px);
+      color: #fff;
+      font-size: 18px;
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 15px;
-      margin-top: 15px;
+      cursor: pointer;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    }
+    .dock-btn.active-mic {
+      background: #2ed573;
+      border-color: #2ed573;
+      box-shadow: 0 0 15px rgba(46, 213, 115, 0.6);
     }
 
-    .btn-yes-huge {
-      background: linear-gradient(135deg, #ff4081, #e91e63);
+    /* Emote Wheel Popup */
+    #emoteWheel {
+      position: absolute;
+      bottom: 85px;
+      right: 25px;
+      background: rgba(18, 20, 32, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 10px 14px;
+      display: none;
+      gap: 12px;
+      z-index: 45;
+      backdrop-filter: blur(12px);
+    }
+    .emote-item {
+      font-size: 22px;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    .emote-item:active { transform: scale(1.3); }
+
+    /* Interaction Prompt Pop */
+    #interactPrompt {
+      position: absolute;
+      bottom: 95px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 35;
+      display: none;
+    }
+    .action-bubble {
+      background: #ffd1dc;
+      color: #1e1e2f;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-weight: 800;
+      font-size: 13.5px;
+      box-shadow: 0 8px 20px rgba(255, 209, 220, 0.5);
+      cursor: pointer;
+    }
+
+    /* Cinema TV Floating HUD */
+    #cinemaControls {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 16, 25, 0.9);
+      border: 2px solid rgba(255, 255, 255, 0.25);
+      border-radius: 40px;
+      padding: 8px 20px;
+      display: none;
+      align-items: center;
+      gap: 15px;
+      z-index: 50;
+      backdrop-filter: blur(12px);
+    }
+    .cinema-btn {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #fff;
+      padding: 7px 15px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .cinema-btn.stand-up {
+      background: #ff4757;
+      border-color: #ff6b81;
+    }
+
+    /* Modal For Viewing Memory Frame */
+    #photoModal {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.88);
+      backdrop-filter: blur(12px);
+      z-index: 80;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    #photoModal img {
+      max-width: 85%;
+      max-height: 60vh;
+      border-radius: 14px;
+      border: 4px solid #fff;
+    }
+    #photoModal p {
+      color: #fff;
+      font-family: 'Playfair Display', serif;
+      font-size: 17px;
+      margin-top: 15px;
+      text-align: center;
+    }
+    .modal-close-btn {
+      margin-top: 18px;
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+      border: 1px solid #fff;
+      padding: 8px 25px;
+      border-radius: 30px;
+      cursor: pointer;
+    }
+
+    /* Proposal Finale Card */
+    #proposalCard {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      width: 90%;
+      max-width: 360px;
+      background: #171822;
+      border: 2px solid #ff758c;
+      border-radius: 24px;
+      padding: 26px 20px;
+      text-align: center;
+      color: #fff;
+      box-shadow: 0 15px 50px rgba(255, 117, 140, 0.3);
+      z-index: 95;
+      display: none;
+    }
+    #proposalCard.active { display: block; }
+    .prop-btn-yes {
+      background: #2ed573;
       color: #fff;
       border: none;
       font-size: 16px;
-      font-weight: 700;
-      padding: 14px 30px;
-      border-radius: 50px;
+      font-weight: 800;
+      padding: 12px 28px;
+      border-radius: 30px;
       cursor: pointer;
-      box-shadow: 0 10px 24px rgba(233, 30, 99, 0.4);
-      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      z-index: 5;
     }
-
-    .btn-no-evasive {
-      background: #f1f3f5;
-      color: #555;
-      border: 1px solid #ced4da;
-      font-size: 15px;
-      font-weight: 600;
-      padding: 12px 24px;
-      border-radius: 50px;
+    .prop-btn-no {
+      background: #ff4757;
+      color: #fff;
+      border: none;
+      font-size: 14px;
+      padding: 10px 22px;
+      border-radius: 30px;
       cursor: pointer;
-      transition: left 0.15s ease, top 0.15s ease;
       position: relative;
-      z-index: 6;
-      touch-action: none;
-    }
-
-    .insta-reveal-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      width: 100%;
-      background: linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
-      color: #ffffff !important;
-      text-decoration: none !important;
-      font-size: 15px;
-      font-weight: 700;
-      padding: 16px 14px;
-      border-radius: 20px;
-      box-shadow: 0 10px 25px rgba(220, 39, 67, 0.45);
-      cursor: pointer;
-      line-height: 1.3;
-      margin-top: 16px;
-    }
-
-    .ending-video-box {
-      width: 100%;
-      border-radius: 18px;
-      overflow: hidden;
-      margin: 15px 0;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-      background: #000;
-    }
-
-    .ending-video-box video {
-      width: 100%;
-      display: block;
-      max-height: 340px;
-      object-fit: cover;
     }
   </style>
 </head>
 <body>
 
-  <!-- Full Screen Video Modal Player -->
-  <div class="video-modal" id="videoModal">
-    <div class="skip-btn" id="skipBtn" onclick="closeModalVideo()">Skip Video ❯</div>
-    <video id="modalVideo" playsinline webkit-playsinline></video>
-  </div>
-
-  <!-- Top Progress Bar -->
-  <div class="progress-bar-container" id="progressBar">
-    <div class="progress-label">
-      <span id="levelIndicator">Game 1 of 5</span>
-      <span id="percentIndicator">16%</span>
-    </div>
-    <div class="progress-track">
-      <div class="progress-fill" id="progressFill"></div>
+  <!-- Lobby Screen -->
+  <div id="lobbyScreen">
+    <div class="lobby-box">
+      <div style="font-size: 45px; margin-bottom: 8px;">🏛️👩‍❤️‍👨</div>
+      <h2 style="font-family:'Playfair Display',serif; color:#ffd1dc; margin-bottom: 8px;">Our 3D Gallery</h2>
+      <p style="font-size: 13px; color: #bbb; margin-bottom: 20px;">Dono saath join ho kar live walk, voice call aur theatre movie enjoy karo!</p>
+      <button class="lobby-btn" onclick="startAsHost()">1. Create Room (Boy) 🤵</button>
+      <button class="lobby-btn" style="background:linear-gradient(135deg, #70a1ff, #1e90ff); margin-top: 10px;" onclick="startAsPartner()">2. Join Room (Girl) 💃</button>
     </div>
   </div>
 
-  <!-- SCREEN 0: Tap to Start -->
-  <div class="stage-card active" id="stageWelcome">
-    <div class="pill-badge">A Special Surprise For You 💌</div>
-    <div style="font-size: 65px; margin-bottom: 12px; animation: float 2.5s infinite ease-in-out;">🌸✨</div>
-    <h2>Hey Beautiful...</h2>
-    <p class="desc">Maine tumhare liye ek chhota sa journey banaya hai. Tap to experience! ✨</p>
-    <button class="action-btn" onclick="startWithIntroVideo()">
-      Tap To Begin 💖
-    </button>
+  <!-- HUD -->
+  <div id="topHud">
+    <div class="status-dot"></div>
+    <span id="hudMsg">Waiting for partner to join...</span>
   </div>
 
-  <!-- GAME 1: Catch 5 Hearts -->
-  <div class="stage-card" id="stage1">
-    <div class="pill-badge">Game 1: Reflex Test 🌸</div>
-    <h2>Catch 5 Floating Hearts!</h2>
-    <p class="desc">Screen pe move ho rahe 5 hearts ko ek-ek karke pakdo!</p>
-    
-    <div class="heart-arena" id="heartArena">
-      <div class="clickable-target" id="movingHeart">💖</div>
-    </div>
-    <p style="font-weight: 700; color: #d81b60; font-size: 14px;" id="game1Status">Hearts Caught: 0 / 5</p>
-  </div>
-
-  <!-- GAME 2: Love Meter -->
-  <div class="stage-card" id="stage2">
-    <div class="pill-badge">Game 2: Energy Boost ⚡</div>
-    <h2>Charge the Love Meter!</h2>
-    <p class="desc">Dil ko baar-baar tap karke 100% full karo!</p>
-    
-    <div class="tap-meter-heart" id="tapHeartBtn">💓</div>
-    <div class="meter-bar-track">
-      <div class="meter-bar-fill" id="meterFill"></div>
-      <div class="meter-text" id="meterPercent">0%</div>
-    </div>
-    <p style="font-size: 13px; color: #888;">Tap tap tap fast! 🚀</p>
-  </div>
-
-  <!-- GAME 3: Memory Match -->
-  <div class="stage-card" id="stage3">
-    <div class="pill-badge">Game 3: Memory Sync 🧠</div>
-    <h2>Find The 3 Matching Pairs!</h2>
-    <p class="desc">Chalo dekhte hain humari thinking kitni milti hai!</p>
-    
-    <div class="memory-grid" id="memoryGrid"></div>
-    <p style="font-weight: 700; color: #d81b60; font-size: 14px;" id="game3Status">Pairs Found: 0 / 3</p>
-  </div>
-
-  <!-- GAME 4: Secret Scratch -->
-  <div class="stage-card" id="stage4">
-    <div class="pill-badge">Game 4: Hidden Secret 🎁</div>
-    <h2>Tap to Scratch & Reveal!</h2>
-    <p class="desc">Is card ke piche ek pyara sa message chupaya hai...</p>
-    
-    <div class="scratch-box" id="scratchBox" onclick="revealSecret()">
-      <div style="font-size: 15px; font-weight: 700; color: #c2185b; line-height: 1.5;">
-        "Duniya me kitni bhi khoobsurat cheezein ho... par tumhari smile jaisi pyari cheez kahi nahi hai ✨"
-      </div>
-      <div class="scratch-cover" id="scratchCover">
-        <span style="font-size: 32px;">💌</span>
-        <span style="font-weight: 700; font-size: 14px;">Tap to Open Secret</span>
-      </div>
-    </div>
-    <button class="action-btn" id="nextToGame5Btn" style="display: none;" onclick="goToStage(5)">Next Stage! 💖</button>
-  </div>
-
-  <!-- GAME 5: Date Planner -->
-  <div class="stage-card" id="stage5">
-    <div class="pill-badge">Game 5: The Ideal Date ☕</div>
-    <h2>Pick Our Perfect Vibe!</h2>
-    <p class="desc">Agar hum mile, toh sabse pehle kya karenge?</p>
-    
-    <div class="options-grid">
-      <div class="choice-card" onclick="selectDate(this, 'Coffee & Deep Talks ☕')">
-        <span style="font-size:26px;">☕</span>
-        Coffee & Deep Talks
-      </div>
-      <div class="choice-card" onclick="selectDate(this, 'Sunset Walk & Ice Cream 🌅')">
-        <span style="font-size:26px;">🌅</span>
-        Sunset & Ice Cream
-      </div>
-      <div class="choice-card" onclick="selectDate(this, 'Long Drive & Late Night Songs 🚗')">
-        <span style="font-size:26px;">🚗</span>
-        Long Drive & Music
-      </div>
-      <div class="choice-card" onclick="selectDate(this, 'Cute Photos & Street Food 📸')">
-        <span style="font-size:26px;">📸</span>
-        Cute Clicks & Food
-      </div>
-    </div>
-    <button class="action-btn" id="lockDateBtn" style="opacity: 0.5; pointer-events: none;" onclick="goToStage(6)">Lock This Choice! 🔒</button>
-  </div>
-
-  <!-- STAGE 6: Runaway Proposal -->
-  <div class="stage-card" id="stage6">
-    <div class="pill-badge">Final Boss Stage 💍</div>
-    <h2>One Last Question For You...</h2>
-    <p class="desc">Itne games jeetne ke baad, kya tum mere sath iss date pe chalogi? 🥰</p>
-    
-    <div id="evasiveStatus" style="font-size: 13px; font-weight: 600; color: #e91e63; min-height: 22px;">Take your time 😉</div>
-
-    <div class="proposal-zone" id="proposalZone">
-      <button class="btn-yes-huge" id="finalYesBtn" onclick="celebrateGrandFinale()">YES! 💖</button>
-      <button class="btn-no-evasive" id="finalNoBtn">No 🙈</button>
+  <!-- Joystick -->
+  <div id="joystickZone">
+    <div class="joystick-base">
+      <div class="joystick-stick" id="stickHandle"></div>
     </div>
   </div>
 
-  <!-- GRAND FINALE REVEAL -->
-  <div class="stage-card" id="stageFinale">
-    <div class="pill-badge" style="background:#e8f5e9; color:#2e7d32;">Official Deal Locked 💖</div>
-    <h2>IT'S A DATE! YAYYY!</h2>
-    
-    <!-- Ending Video Playback -->
-    <div class="ending-video-box">
-      <video id="finalEndingVideo" autoplay loop playsinline webkit-playsinline src="ending.mp4"></video>
-    </div>
+  <!-- Action Deck -->
+  <div class="action-dock">
+    <button class="dock-btn" id="micBtn" onclick="toggleMic()">🎤</button>
+    <button class="dock-btn" onclick="toggleEmoteWheel()">🕺</button>
+  </div>
 
-    <p style="font-family: 'Dancing Script', cursive; font-size: 24px; color: #d81b60; margin-bottom: 8px;">
-      Can't wait to see your pretty smile! 🌸
+  <!-- Emote Wheel -->
+  <div id="emoteWheel">
+    <div class="emote-item" onclick="triggerEmote('dance')">💃</div>
+    <div class="emote-item" onclick="triggerEmote('wave')">👋</div>
+    <div class="emote-item" onclick="triggerEmote('heart')">💖</div>
+    <div class="emote-item" onclick="triggerEmote('kiss')">💋</div>
+  </div>
+
+  <!-- Interaction Prompt -->
+  <div id="interactPrompt">
+    <button class="action-bubble" id="actionBtn" onclick="onInteractTrigger()">Action</button>
+  </div>
+
+  <!-- Cinema HUD -->
+  <div id="cinemaControls">
+    <button class="cinema-btn" id="playPauseBtn" onclick="toggleVideoPlayback(true)">⏸️ Pause</button>
+    <button class="cinema-btn stand-up" onclick="standUpFromSofa(true)">Utho 🚶‍♂️</button>
+  </div>
+
+  <!-- Photo Modal View -->
+  <div id="photoModal">
+    <img id="modalImg" src="photo1.jpg" alt="Memory">
+    <p id="modalCaption">Every moment with you is a masterpiece. ✨</p>
+    <button class="modal-close-btn" onclick="closeModal()">Close ✕</button>
+  </div>
+
+  <!-- Proposal Card -->
+  <div id="proposalCard">
+    <div style="font-size: 45px; margin-bottom: 5px;">💍✨</div>
+    <h2 style="font-family: 'Playfair Display', serif; color: #ffd1dc; margin-bottom: 10px;">The Most Special Art</h2>
+    <p style="font-size: 13.5px; color: #ccc; line-height: 1.5; margin-bottom: 20px;">
+      "Duniya ki har painting ek taraf, aur tumhari muskaan ek taraf... Will you be mine forever? 💖"
     </p>
-
-    <div style="background:#fff5f8; border:1.5px dashed #ff94b4; border-radius:18px; padding:12px; margin:10px 0; text-align:left;">
-      <div style="font-size: 12px; font-weight: 700; color: #d81b60;">Final Agenda Confirmed:</div>
-      <div style="font-size: 12.5px; color: #495057; margin-top: 3px;" id="finalChosenAgenda">☕ Coffee & Endless talks</div>
+    <div style="display: flex; justify-content: center; gap: 15px; align-items: center; min-height: 50px; position: relative;">
+      <button class="prop-btn-yes" id="yesBtn" onclick="onProposalYes()">YES! 🥰</button>
+      <button class="prop-btn-no" id="noBtn">No 🙈</button>
     </div>
-
-    <!-- Instagram Direct Reveal Link -->
-    <a href="https://www.instagram.com/just_ni_07?cplk=MXM1dDI5N2s3djI1NA==" 
-       target="_blank" 
-       rel="noopener noreferrer" 
-       class="insta-reveal-btn">
-      <span>Do you wanna know who is my beautiful love? ✨💖</span>
-    </a>
   </div>
+
+  <!-- Media Elements -->
+  <video id="theatreVideo" playsinline webkit-playsinline loop preload="auto" style="display:none;">
+    <source src="couple_video.mp4" type="video/mp4">
+  </video>
+  <audio id="remoteAudio" autoplay></audio>
+
+  <!-- 3D Canvas -->
+  <canvas id="canvas3d"></canvas>
     <script>
-    // Falling Petals
-    function spawnPetal() {
-      const petal = document.createElement('div');
-      petal.className = 'bg-petal';
-      const symbols = ['🌸', '💖', '✨', '☕', '🌷', '💕'];
-      petal.innerText = symbols[Math.floor(Math.random() * symbols.length)];
-      petal.style.left = Math.random() * 100 + 'vw';
-      petal.style.animationDuration = (Math.random() * 3 + 5) + 's';
-      petal.style.fontSize = (Math.random() * 12 + 16) + 'px';
-      document.body.appendChild(petal);
-      setTimeout(() => petal.remove(), 8000);
-    }
-    setInterval(spawnPetal, 700);
+    /* P2P Multiplayer Networking via WebRTC (PeerJS) */
+    let peer = null;
+    let peerConn = null;
+    let localStream = null;
+    let isMicOn = false;
+    let myRole = 'host'; // 'host' (Boy) or 'client' (Girl)
+    const ROOM_ID = "special-one-love-room-998877";
 
-    /* Full-Screen Video Manager */
-    const videoModal = document.getElementById('videoModal');
-    const modalVideo = document.getElementById('modalVideo');
-    let nextStageAfterVideo = 1;
-
-    function playFullScreenVideo(src, onEndStage) {
-      nextStageAfterVideo = onEndStage;
-      modalVideo.src = src;
-      videoModal.style.display = 'flex';
-      modalVideo.currentTime = 0;
-      modalVideo.play().catch(e => console.log('Video play error:', e));
-
-      modalVideo.onended = () => {
-        closeModalVideo();
-      };
+    function startAsHost() {
+      myRole = 'host';
+      document.getElementById('lobbyScreen').style.display = 'none';
+      initPeer(ROOM_ID);
+      init3D();
     }
 
-    function closeModalVideo() {
-      modalVideo.pause();
-      videoModal.style.display = 'none';
-      goToStage(nextStageAfterVideo);
+    function startAsPartner() {
+      myRole = 'client';
+      document.getElementById('lobbyScreen').style.display = 'none';
+      initPeer(null); // Random peer ID, connects to host
+      init3D();
     }
 
-    // Step 0: User taps -> Play Intro Video
-    function startWithIntroVideo() {
-      document.getElementById('progressBar').style.display = 'flex';
-      playFullScreenVideo('intro.mp4', 1);
-    }
+    function initPeer(customId) {
+      peer = customId ? new Peer(customId) : new Peer();
 
-    function goToStage(num) {
-      document.querySelectorAll('.stage-card').forEach(c => c.classList.remove('active'));
-      const nextCard = document.getElementById(num === 7 ? 'stageFinale' : `stage${num}`);
-      if (nextCard) nextCard.classList.add('active');
+      peer.on('open', (id) => {
+        if (myRole === 'client') {
+          // Connect to Host
+          peerConn = peer.connect(ROOM_ID);
+          setupDataConnection();
+        }
+      });
 
-      const progressFill = document.getElementById('progressFill');
-      const levelIndicator = document.getElementById('levelIndicator');
-      const percentIndicator = document.getElementById('percentIndicator');
+      peer.on('connection', (conn) => {
+        peerConn = conn;
+        setupDataConnection();
+      });
 
-      if (num <= 5) {
-        levelIndicator.innerText = `Game ${num} of 5`;
-        const pct = Math.round((num / 6) * 100);
-        progressFill.style.width = pct + '%';
-        percentIndicator.innerText = pct + '%';
-      } else if (num === 6) {
-        levelIndicator.innerText = `Final Boss Stage 💍`;
-        progressFill.style.width = '90%';
-        percentIndicator.innerText = '90%';
-      } else {
-        levelIndicator.innerText = `Mission Completed! 🥳`;
-        progressFill.style.width = '100%';
-        percentIndicator.innerText = '100%';
-      }
-    }
-
-    /* GAME 1 */
-    let heartsCaught = 0;
-    const movingHeart = document.getElementById('movingHeart');
-    const heartArena = document.getElementById('heartArena');
-    const game1Status = document.getElementById('game1Status');
-
-    function jumpHeart() {
-      const arenaW = heartArena.clientWidth || 300;
-      const arenaH = heartArena.clientHeight || 230;
-
-      const maxX = Math.max(10, arenaW - 70);
-      const maxY = Math.max(10, arenaH - 70);
-
-      const rx = Math.floor(Math.random() * maxX) + 35;
-      const ry = Math.floor(Math.random() * maxY) + 35;
-
-      movingHeart.style.display = 'block';
-      movingHeart.style.left = rx + 'px';
-      movingHeart.style.top = ry + 'px';
-    }
-
-    setTimeout(jumpHeart, 250);
-
-    function onHeartClick(e) {
-      if (e) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-      heartsCaught++;
-      game1Status.innerText = "Hearts Caught: " + heartsCaught + " / 5";
-      confetti({ particleCount: 15, spread: 45, origin: { y: 0.6 } });
-
-      if (heartsCaught >= 5) {
-        movingHeart.style.display = 'none';
-        game1Status.innerText = "Hearts Caught: 5 / 5 🎉";
-        setTimeout(() => goToStage(2), 700);
-      } else {
-        jumpHeart();
-      }
-    }
-
-    movingHeart.addEventListener('click', onHeartClick);
-    movingHeart.addEventListener('touchstart', onHeartClick, { passive: false });
-
-
-    /* GAME 2 */
-    let meterScore = 0;
-    const tapHeartBtn = document.getElementById('tapHeartBtn');
-    function tapMeter(e) {
-      if (e) e.preventDefault();
-      if (meterScore >= 100) return;
-      meterScore += 10;
-      if (meterScore > 100) meterScore = 100;
-      document.getElementById('meterFill').style.width = meterScore + '%';
-      document.getElementById('meterPercent').innerText = meterScore + '%';
-
-      tapHeartBtn.style.transform = 'scale(1.25)';
-      setTimeout(() => tapHeartBtn.style.transform = 'scale(1)', 100);
-
-      if (meterScore >= 100) {
-        confetti({ particleCount: 35, spread: 60 });
-        setTimeout(() => {
-          initMemoryGame();
-          goToStage(3);
-        }, 800);
-      }
-    }
-    tapHeartBtn.addEventListener('click', tapMeter);
-    tapHeartBtn.addEventListener('touchstart', tapMeter);
-
-    /* GAME 3 */
-    const icons = ['🌸', '☕', '🧸', '🌸', '☕', '🧸'];
-    let flippedCards = [];
-    let matchedPairs = 0;
-
-    function initMemoryGame() {
-      const grid = document.getElementById('memoryGrid');
-      grid.innerHTML = '';
-      [...icons].sort(() => 0.5 - Math.random()).forEach(icon => {
-        const tile = document.createElement('div');
-        tile.className = 'memory-tile';
-        tile.dataset.icon = icon;
-        tile.innerText = '❓';
-        tile.onclick = () => {
-          if (tile.classList.contains('flipped') || tile.classList.contains('matched') || flippedCards.length === 2) return;
-          tile.classList.add('flipped');
-          tile.innerText = tile.dataset.icon;
-          flippedCards.push(tile);
-
-          if (flippedCards.length === 2) {
-            if (flippedCards[0].dataset.icon === flippedCards[1].dataset.icon) {
-              cardMatched(tile);
-            } else {
-              setTimeout(() => {
-                flippedCards[0].classList.remove('flipped');
-                flippedCards[0].innerText = '❓';
-                flippedCards[1].classList.remove('flipped');
-                flippedCards[1].innerText = '❓';
-                flippedCards = [];
-              }, 600);
-            }
-          }
-        };
-        grid.appendChild(tile);
+      // Answer incoming Voice Audio Call
+      peer.on('call', (call) => {
+        navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+          .then((stream) => {
+            localStream = stream;
+            call.answer(stream);
+            call.on('stream', (remoteStream) => {
+              document.getElementById('remoteAudio').srcObject = remoteStream;
+            });
+          })
+          .catch(e => console.log("Mic permission denied", e));
       });
     }
 
-    function cardMatched(tile) {
-      flippedCards[0].classList.add('matched');
-      flippedCards[1].classList.add('matched');
-      matchedPairs++;
-      document.getElementById('game3Status').innerText = `Pairs Found: ${matchedPairs} / 3`;
-      flippedCards = [];
+    function setupDataConnection() {
+      peerConn.on('open', () => {
+        document.getElementById('hudMsg').innerText = "Partner Connected! 💖";
+        document.querySelector('.status-dot').style.background = "#2ed573";
+      });
 
-      // Game 3 complete -> Trigger Middle Video!
-      if (matchedPairs === 3) {
-        confetti({ particleCount: 40, spread: 70 });
-        setTimeout(() => {
-          playFullScreenVideo('middle.mp4', 4);
-        }, 900);
+      peerConn.on('data', (data) => {
+        // Handle incoming sync packets
+        if (data.type === 'move') {
+          if (remoteAvatar) {
+            remoteAvatar.position.set(data.x, data.y, data.z);
+            remoteAvatar.rotation.y = data.rotY;
+            if (remoteLegLeft && remoteLegRight) {
+              remoteLegLeft.rotation.x = data.legL;
+              remoteLegRight.rotation.x = data.legR;
+            }
+          }
+        } else if (data.type === 'emote') {
+          playRemoteEmote(data.emote);
+        } else if (data.type === 'video') {
+          if (data.action === 'play') {
+            videoElement.currentTime = data.time || 0;
+            videoElement.play();
+            document.getElementById('playPauseBtn').innerText = "⏸️ Pause";
+          } else if (data.action === 'pause') {
+            videoElement.pause();
+            document.getElementById('playPauseBtn').innerText = "▶️ Play";
+          }
+        } else if (data.type === 'sit') {
+          sitOnSofaTogether(false);
+        } else if (data.type === 'stand') {
+          standUpFromSofa(false);
+        }
+      });
+    }
+
+    function sendMultiplayerPacket(packet) {
+      if (peerConn && peerConn.open) {
+        peerConn.send(packet);
       }
     }
 
-    /* GAME 4 */
-    function revealSecret() {
-      document.getElementById('scratchCover').classList.add('revealed');
-      document.getElementById('nextToGame5Btn').style.display = 'inline-flex';
-      confetti({ particleCount: 25, spread: 60 });
+    /* Live Mic Toggle */
+    function toggleMic() {
+      const btn = document.getElementById('micBtn');
+      if (!isMicOn) {
+        navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+          .then((stream) => {
+            localStream = stream;
+            isMicOn = true;
+            btn.classList.add('active-mic');
+            btn.innerText = "🎙️";
+
+            // Call partner with voice stream
+            if (peerConn && peerConn.peer) {
+              const call = peer.call(peerConn.peer, stream);
+              call.on('stream', (remStream) => {
+                document.getElementById('remoteAudio').srcObject = remStream;
+              });
+            }
+          })
+          .catch(err => {
+            alert("Mic permission allow karni hogi call ke liye!");
+          });
+      } else {
+        if (localStream) {
+          localStream.getTracks().forEach(track => track.stop());
+        }
+        isMicOn = false;
+        btn.classList.remove('active-mic');
+        btn.innerText = "🎤";
+      }
+    }
+          /* Three.js Scene Variables */
+    let scene, camera, renderer;
+    let localAvatar, remoteAvatar;
+    let legLeft, legRight, armLeft, armRight;
+    let remoteLegLeft, remoteLegRight, remoteArmLeft, remoteArmRight;
+    let frames = [];
+    let joystickActive = false;
+    let joyMove = { x: 0, y: 0 };
+    let walkCycle = 0;
+    let nearbyItem = null;
+    let isSitting = false;
+    let currentEmote = null;
+
+    const videoElement = document.getElementById('theatreVideo');
+    let videoTexture = null;
+
+    function init3D() {
+      const canvas = document.getElementById('canvas3d');
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x090a0f);
+      scene.fog = new THREE.FogExp2(0x090a0f, 0.022);
+
+      camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+
+      const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+      scene.add(ambient);
+
+      buildGalleryRoom();
+      buildCinemaScreenAndSofa();
+      createMultiplayerAvatars();
+      setupJoystick();
+      setupProposalButtons();
+
+      window.addEventListener('resize', onWindowResize);
+      animate();
     }
 
-    /* GAME 5 */
-    let selectedDateAgenda = 'Coffee & Deep Talks ☕';
-    function selectDate(element, text) {
-      document.querySelectorAll('.choice-card').forEach(c => c.classList.remove('selected'));
-      element.classList.add('selected');
-      selectedDateAgenda = text;
-      const lockBtn = document.getElementById('lockDateBtn');
-      lockBtn.style.opacity = '1';
-      lockBtn.style.pointerEvents = 'auto';
+    function buildGalleryRoom() {
+      const textureLoader = new THREE.TextureLoader();
+
+      // Floor
+      const floorGeo = new THREE.PlaneGeometry(26, 75);
+      const floorMat = new THREE.MeshStandardMaterial({ color: 0x141211, roughness: 0.35, metalness: 0.25 });
+      const floor = new THREE.Mesh(floorGeo, floorMat);
+      floor.rotation.x = -Math.PI / 2;
+      scene.add(floor);
+
+      // Ceiling
+      const ceilGeo = new THREE.PlaneGeometry(26, 75);
+      const ceilMat = new THREE.MeshStandardMaterial({ color: 0x08090d });
+      const ceiling = new THREE.Mesh(ceilGeo, ceilMat);
+      ceiling.rotation.x = Math.PI / 2;
+      ceiling.position.y = 8.5;
+      scene.add(ceiling);
+
+      // Walls
+      const wallMat = new THREE.MeshStandardMaterial({ color: 0x181a24, roughness: 0.8 });
+      
+      const wallLeft = new THREE.Mesh(new THREE.BoxGeometry(0.8, 8.5, 75), wallMat);
+      wallLeft.position.set(-13, 4.25, 0);
+      scene.add(wallLeft);
+
+      const wallRight = new THREE.Mesh(new THREE.BoxGeometry(0.8, 8.5, 75), wallMat);
+      wallRight.position.set(13, 4.25, 0);
+      scene.add(wallRight);
+
+      const wallBack = new THREE.Mesh(new THREE.BoxGeometry(26, 8.5, 0.8), wallMat);
+      wallBack.position.set(0, 4.25, 37.5);
+      scene.add(wallBack);
+
+      const wallFront = new THREE.Mesh(new THREE.BoxGeometry(26, 8.5, 0.8), wallMat);
+      wallFront.position.set(0, 4.25, -37.5);
+      scene.add(wallFront);
+
+      // Photo Frames
+      const frameData = [
+        { x: -12.5, z: 22, rotY: Math.PI / 2, src: 'photo1.jpg', label: "Our Beautiful Beginning 🌸" },
+        { x: 12.5, z: 22, rotY: -Math.PI / 2, src: 'photo2.jpg', label: "That Pure Sweet Smile ✨" },
+        { x: -12.5, z: -18, rotY: Math.PI / 2, src: 'photo3.jpg', label: "Favorite Adventures Together 🚗" },
+        { x: 12.5, z: -18, rotY: -Math.PI / 2, src: 'photo4.jpg', label: "Unbreakable Connection ♾️" },
+        { x: 0, z: -37, rotY: 0, src: 'photo1.jpg', label: "Special Secret Spotlight 💍", isProposal: true }
+      ];
+
+      frameData.forEach((data) => {
+        const spot = new THREE.SpotLight(0xffecd2, 2.2, 14, Math.PI / 4, 0.4);
+        spot.position.set(data.x * 0.7, 7.5, data.z);
+        spot.target.position.set(data.x, 3.5, data.z);
+        scene.add(spot);
+        scene.add(spot.target);
+
+        const border = new THREE.Mesh(
+          new THREE.BoxGeometry(4.2, 5.2, 0.15),
+          new THREE.MeshStandardMaterial({ color: 0xd4af37, roughness: 0.3, metalness: 0.8 })
+        );
+        border.position.set(data.x, 3.5, data.z);
+        border.rotation.y = data.rotY;
+        scene.add(border);
+
+        const photoTex = textureLoader.load(data.src);
+        const pic = new THREE.Mesh(
+          new THREE.PlaneGeometry(3.8, 4.8),
+          new THREE.MeshBasicMaterial({ map: photoTex })
+        );
+        pic.position.set(data.x + (data.x > 0 ? -0.1 : (data.x < 0 ? 0.1 : 0)), 3.5, data.z + (data.z === -37 ? 0.1 : 0));
+        pic.rotation.y = data.rotY;
+        scene.add(pic);
+
+        frames.push({ x: data.x, z: data.z, src: data.src, label: data.label, isProposal: data.isProposal });
+      });
+
+      // Ceiling Spotlights
+      for (let z = 28; z >= -28; z -= 14) {
+        const pLight = new THREE.PointLight(0xffd5b8, 0.8, 15);
+        pLight.position.set(0, 7.5, z);
+        scene.add(pLight);
+      }
     }
 
-    /* STAGE 6: Runaway */
-    const finalNoBtn = document.getElementById('finalNoBtn');
-    const finalYesBtn = document.getElementById('finalYesBtn');
-    const evasiveStatus = document.getElementById('evasiveStatus');
-    const proposalZone = document.getElementById('proposalZone');
+    function buildCinemaScreenAndSofa() {
+      videoTexture = new THREE.VideoTexture(videoElement);
+      videoTexture.minFilter = THREE.LinearFilter;
+      videoTexture.magFilter = THREE.LinearFilter;
+      videoTexture.format = THREE.RGBAFormat;
 
-    const evasiveRemarks = [
-      "Arre button bhag gaya! 😂",
-      "No bolne ka option hi nahi hai 🙈",
-      "Galat button daba rahi ho! 🥺",
-      "YES button bol raha hai click me! ✨"
-    ];
-    let evasiveCount = 0;
-    let yesScale = 1;
+      // TV Frame
+      const tvFrame = new THREE.Mesh(
+        new THREE.BoxGeometry(0.3, 7.2, 12.2),
+        new THREE.MeshStandardMaterial({ color: 0x111115, roughness: 0.2, metalness: 0.9 })
+      );
+      tvFrame.position.set(-12.5, 4.3, 2);
+      scene.add(tvFrame);
 
-    function dodgeNo(e) {
-      if (e) e.preventDefault();
-      evasiveCount++;
-      yesScale += 0.2;
-      finalYesBtn.style.transform = `scale(${yesScale})`;
-      evasiveStatus.innerText = evasiveRemarks[evasiveCount % evasiveRemarks.length];
+      // TV Display Mesh
+      const tvScreen = new THREE.Mesh(
+        new THREE.PlaneGeometry(11.8, 6.8),
+        new THREE.MeshBasicMaterial({ map: videoTexture })
+      );
+      tvScreen.position.set(-12.3, 4.3, 2);
+      tvScreen.rotation.y = Math.PI / 2;
+      scene.add(tvScreen);
 
-      const pRect = proposalZone.getBoundingClientRect();
-      const maxX = pRect.width - finalNoBtn.offsetWidth - 20;
-      const maxY = pRect.height - finalNoBtn.offsetHeight;
-      finalNoBtn.style.position = 'absolute';
-      finalNoBtn.style.left = Math.max(10, Math.floor(Math.random() * maxX)) + 'px';
-      finalNoBtn.style.top = Math.max(5, Math.floor(Math.random() * (maxY > 10 ? maxY : 60))) + 'px';
+      // Lounge Sofa
+      const sofaGroup = new THREE.Group();
+      sofaGroup.position.set(-5.5, 0, 2);
+      sofaGroup.rotation.y = Math.PI / 2;
+
+      const sofaMat = new THREE.MeshStandardMaterial({ color: 0x8b0000, roughness: 0.6 });
+
+      const sofaSeat = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.6, 1.8), sofaMat);
+      sofaSeat.position.set(0, 0.5, 0);
+      sofaGroup.add(sofaSeat);
+
+      const sofaBack = new THREE.Mesh(new THREE.BoxGeometry(4.2, 1.4, 0.5), sofaMat);
+      sofaBack.position.set(0, 1.4, 0.7);
+      sofaGroup.add(sofaBack);
+
+      const armMat = new THREE.MeshStandardMaterial({ color: 0x660000 });
+      const sofaArmL = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.1, 1.8), armMat);
+      sofaArmL.position.set(-2.2, 0.9, 0);
+      sofaGroup.add(sofaArmL);
+
+      const sofaArmR = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.1, 1.8), armMat);
+      sofaArmR.position.set(2.2, 0.9, 0);
+      sofaGroup.add(sofaArmR);
+
+      scene.add(sofaGroup);
+
+      frames.push({ x: -5.5, z: 2, isSofa: true, label: "Sit & Watch Movie Together 🍿" });
+        }
+          /* 3D Avatars Generation */
+    function createMultiplayerAvatars() {
+      const skinMat = new THREE.MeshStandardMaterial({ color: 0xffd5b8 });
+      const boyCloth = new THREE.MeshStandardMaterial({ color: 0x222f3e });
+      const girlDress = new THREE.MeshStandardMaterial({ color: 0xff758c });
+      const pantsMat = new THREE.MeshStandardMaterial({ color: 0x576574 });
+      const legGeo = new THREE.CylinderGeometry(0.09, 0.09, 0.7, 8);
+      const armGeo = new THREE.CylinderGeometry(0.07, 0.07, 0.65, 8);
+
+      // Local Avatar (Tujhe jo control karna hai)
+      localAvatar = new THREE.Group();
+      const myCloth = (myRole === 'host') ? boyCloth : girlDress;
+
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.32, 16, 16), skinMat);
+      head.position.y = 1.95;
+      localAvatar.add(head);
+
+      const body = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.35, 0.9, 12), myCloth);
+      body.position.y = 1.25;
+      localAvatar.add(body);
+
+      legLeft = new THREE.Mesh(legGeo, pantsMat);
+      legLeft.position.set(-0.16, 0.45, 0);
+      localAvatar.add(legLeft);
+
+      legRight = new THREE.Mesh(legGeo, pantsMat);
+      legRight.position.set(0.16, 0.45, 0);
+      localAvatar.add(legRight);
+
+      armLeft = new THREE.Mesh(armGeo, myCloth);
+      armLeft.position.set(-0.42, 1.3, 0);
+      localAvatar.add(armLeft);
+
+      armRight = new THREE.Mesh(armGeo, myCloth);
+      armRight.position.set(0.42, 1.3, 0);
+      localAvatar.add(armRight);
+
+      localAvatar.position.set(myRole === 'host' ? 1.5 : -1.5, 0, 30);
+      scene.add(localAvatar);
+
+      // Remote Partner Avatar (Uski position network se sync hogi)
+      remoteAvatar = new THREE.Group();
+      const partnerCloth = (myRole === 'host') ? girlDress : boyCloth;
+
+      const rHead = new THREE.Mesh(new THREE.SphereGeometry(0.32, 16, 16), skinMat);
+      rHead.position.y = 1.95;
+      remoteAvatar.add(rHead);
+
+      const rBody = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.35, 0.9, 12), partnerCloth);
+      rBody.position.y = 1.25;
+      remoteAvatar.add(rBody);
+
+      remoteLegLeft = new THREE.Mesh(legGeo, pantsMat);
+      remoteLegLeft.position.set(-0.16, 0.45, 0);
+      remoteAvatar.add(remoteLegLeft);
+
+      remoteLegRight = new THREE.Mesh(legGeo, pantsMat);
+      remoteLegRight.position.set(0.16, 0.45, 0);
+      remoteAvatar.add(remoteLegRight);
+
+      remoteArmLeft = new THREE.Mesh(armGeo, partnerCloth);
+      remoteArmLeft.position.set(-0.42, 1.3, 0);
+      remoteAvatar.add(remoteArmLeft);
+
+      remoteArmRight = new THREE.Mesh(armGeo, partnerCloth);
+      remoteArmRight.position.set(0.42, 1.3, 0);
+      remoteAvatar.add(remoteArmRight);
+
+      remoteAvatar.position.set(myRole === 'host' ? -1.5 : 1.5, 0, 30);
+      scene.add(remoteAvatar);
     }
 
-    finalNoBtn.addEventListener('mouseenter', dodgeNo);
-    finalNoBtn.addEventListener('touchstart', dodgeNo, { passive: false });
-    finalNoBtn.addEventListener('click', dodgeNo);
+    /* Joystick Setup */
+    function setupJoystick() {
+      const zone = document.getElementById('joystickZone');
+      const handle = document.getElementById('stickHandle');
+      const maxRadius = 38;
 
-    /* GRAND FINALE */
-    function celebrateGrandFinale() {
-      document.getElementById('finalChosenAgenda').innerText = `${selectedDateAgenda} + Cute moments`;
-      goToStage(7);
+      function handleTouch(e) {
+        if (isSitting) return;
+        const touch = e.touches[0];
+        const rect = zone.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
 
-      const finalVid = document.getElementById('finalEndingVideo');
-      finalVid.currentTime = 0;
-      finalVid.play().catch(e => console.log('Final video error:', e));
+        let dx = touch.clientX - centerX;
+        let dy = touch.clientY - centerY;
+        const dist = Math.hypot(dx, dy);
 
-      const duration = 4 * 1000;
-      const end = Date.now() + duration;
-      (function frame() {
-        confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#ff4081', '#e91e63', '#ffeb3b'] });
-        confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ff4081', '#e91e63', '#ffeb3b'] });
-        if (Date.now() < end) requestAnimationFrame(frame);
-      }());
+        if (dist > maxRadius) {
+          dx = (dx / dist) * maxRadius;
+          dy = (dy / dist) * maxRadius;
+        }
+
+        handle.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+        joyMove.x = dx / maxRadius;
+        joyMove.y = dy / maxRadius;
+        joystickActive = true;
+      }
+
+      function stopTouch() {
+        handle.style.transform = `translate(-50%, -50%)`;
+        joyMove.x = 0;
+        joyMove.y = 0;
+        joystickActive = false;
+      }
+
+      zone.addEventListener('touchstart', (e) => { e.preventDefault(); handleTouch(e); });
+      zone.addEventListener('touchmove', (e) => { e.preventDefault(); handleTouch(e); });
+      zone.addEventListener('touchend', stopTouch);
+      zone.addEventListener('touchcancel', stopTouch);
+    }
+
+    /* Emotes Wheel System */
+    function toggleEmoteWheel() {
+      const wheel = document.getElementById('emoteWheel');
+      wheel.style.display = wheel.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    function triggerEmote(name) {
+      currentEmote = name;
+      document.getElementById('emoteWheel').style.display = 'none';
+      sendMultiplayerPacket({ type: 'emote', emote: name });
+
+      if (name === 'heart') {
+        confetti({ particleCount: 20, spread: 50 });
+      }
+
+      setTimeout(() => { currentEmote = null; }, 3500);
+    }
+
+    function playRemoteEmote(name) {
+      if (name === 'heart') {
+        confetti({ particleCount: 20, spread: 50, origin: { x: 0.4 } });
+      }
+    }
+
+    /* Proximity & Interaction */
+    function checkInteractions() {
+      if (!localAvatar || isSitting) return;
+      const prompt = document.getElementById('interactPrompt');
+      const btn = document.getElementById('actionBtn');
+
+      let found = null;
+      for (let f of frames) {
+        const d = Math.hypot(localAvatar.position.x - f.x, localAvatar.position.z - f.z);
+        if (d < 4.5) {
+          found = f;
+          break;
+        }
+      }
+
+      nearbyItem = found;
+      if (found) {
+        prompt.style.display = 'block';
+        if (found.isSofa) {
+          btn.innerText = "Sit & Watch Movie 🍿";
+        } else if (found.isProposal) {
+          btn.innerText = "Open The Secret 💍";
+        } else {
+          btn.innerText = "View Memory 🖼️";
+        }
+      } else {
+        prompt.style.display = 'none';
+      }
+    }
+
+    function onInteractTrigger() {
+      if (!nearbyItem) return;
+      if (nearbyItem.isSofa) {
+        sitOnSofaTogether(true);
+      } else if (nearbyItem.isProposal) {
+        document.getElementById('proposalCard').classList.add('active');
+        confetti({ particleCount: 30, spread: 60 });
+      } else {
+        document.getElementById('modalImg').src = nearbyItem.src;
+        document.getElementById('modalCaption').innerText = nearbyItem.label;
+        document.getElementById('photoModal').style.display = 'flex';
+      }
+    }
+
+    /* Sofa Sit & Movie Sync */
+    function sitOnSofaTogether(broadcast) {
+      isSitting = true;
+      document.getElementById('interactPrompt').style.display = 'none';
+      document.getElementById('joystickZone').style.opacity = '0.3';
+      document.getElementById('cinemaControls').style.display = 'flex';
+
+      localAvatar.position.set(-5.5, 0.25, myRole === 'host' ? 2.4 : 1.6);
+      localAvatar.rotation.y = -Math.PI / 2;
+      legLeft.rotation.x = -Math.PI / 2;
+      legRight.rotation.x = -Math.PI / 2;
+
+      videoElement.play().catch(()=>{});
+
+      if (broadcast) {
+        sendMultiplayerPacket({ type: 'sit' });
+      }
+    }
+
+    function standUpFromSofa(broadcast) {
+      isSitting = false;
+      document.getElementById('cinemaControls').style.display = 'none';
+      document.getElementById('joystickZone').style.opacity = '1';
+
+      legLeft.rotation.x = 0;
+      legRight.rotation.x = 0;
+      localAvatar.position.set(-4.0, 0, 2);
+
+      if (broadcast) {
+        sendMultiplayerPacket({ type: 'stand' });
+      }
+    }
+
+    function toggleVideoPlayback(broadcast) {
+      if (videoElement.paused) {
+        videoElement.play();
+        document.getElementById('playPauseBtn').innerText = "⏸️ Pause";
+        if (broadcast) sendMultiplayerPacket({ type: 'video', action: 'play', time: videoElement.currentTime });
+      } else {
+        videoElement.pause();
+        document.getElementById('playPauseBtn').innerText = "▶️ Play";
+        if (broadcast) sendMultiplayerPacket({ type: 'video', action: 'pause' });
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('photoModal').style.display = 'none';
+    }
+
+    function setupProposalButtons() {
+      const noBtn = document.getElementById('noBtn');
+      function dodge(e) {
+        if (e) e.preventDefault();
+        const rx = (Math.random() * 120) - 60;
+        const ry = (Math.random() * -100) - 10;
+        noBtn.style.transform = `translate(${rx}px, ${ry}px)`;
+      }
+      noBtn.addEventListener('mouseenter', dodge);
+      noBtn.addEventListener('touchstart', dodge);
+    }
+
+    function onProposalYes() {
+      confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
+      document.getElementById('proposalCard').innerHTML = `
+        <div style="font-size: 55px; margin-bottom: 8px;">🎉💖💍</div>
+        <h2 style="color: #ffd1dc; margin-bottom: 8px;">SHE SAID YES!</h2>
+        <p style="font-size: 13.5px; color: #eee; margin-bottom: 18px;">
+          Hamari gallery aur cinema toh shuruat thi... Pura safar abhi baaki hai! ♾️
+        </p>
+        <a href="https://www.instagram.com/just_ni_07?cplk=MXM1dDI5N2s3djI1NA==" 
+           target="_blank" 
+           style="display:inline-block; background:linear-gradient(135deg, #f09433, #dc2743, #bc1888); color:#fff; text-decoration:none; font-weight:800; padding:12px 22px; border-radius:25px; font-size:13.5px;">
+           Do you wanna know who is my beautiful love? ✨💖
+        </a>
+      `;
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    /* Main Render & Animation Loop */
+    function animate() {
+      requestAnimationFrame(animate);
+
+      if (localAvatar && !isSitting) {
+        if (joystickActive) {
+          const speed = 0.16;
+          localAvatar.position.x += joyMove.x * speed;
+          localAvatar.position.z += joyMove.y * speed;
+
+          localAvatar.position.x = Math.max(-10.5, Math.min(10.5, localAvatar.position.x));
+          localAvatar.position.z = Math.max(-34, Math.min(34, localAvatar.position.z));
+
+          const angle = Math.atan2(joyMove.x, joyMove.y);
+          localAvatar.rotation.y = angle;
+
+          walkCycle += 0.22;
+          legLeft.rotation.x = Math.sin(walkCycle) * 0.65;
+          legRight.rotation.x = -Math.sin(walkCycle) * 0.65;
+          armLeft.rotation.x = -Math.sin(walkCycle) * 0.5;
+          armRight.rotation.x = Math.sin(walkCycle) * 0.5;
+
+          // Send real-time packet to partner
+          sendMultiplayerPacket({
+            type: 'move',
+            x: localAvatar.position.x,
+            y: localAvatar.position.y,
+            z: localAvatar.position.z,
+            rotY: localAvatar.rotation.y,
+            legL: legLeft.rotation.x,
+            legR: legRight.rotation.x
+          });
+        } else {
+          // Emote handling when not walking
+          if (currentEmote === 'dance') {
+            walkCycle += 0.3;
+            armLeft.rotation.z = Math.sin(walkCycle) * 1.2;
+            armRight.rotation.z = -Math.sin(walkCycle) * 1.2;
+            localAvatar.rotation.y += 0.05;
+          } else if (currentEmote === 'wave') {
+            armRight.rotation.z = Math.PI - Math.sin(Date.now() * 0.01) * 0.4;
+          } else {
+            legLeft.rotation.x = 0;
+            legRight.rotation.x = 0;
+            armLeft.rotation.x = 0;
+            armLeft.rotation.z = 0;
+            armRight.rotation.x = 0;
+            armRight.rotation.z = 0;
+          }
+        }
+
+        camera.position.x = localAvatar.position.x;
+        camera.position.y = localAvatar.position.y + 3.2;
+        camera.position.z = localAvatar.position.z + 5.5;
+        camera.lookAt(localAvatar.position.x, localAvatar.position.y + 1.6, localAvatar.position.z - 3);
+
+        checkInteractions();
+      } else if (isSitting) {
+        camera.position.set(-1.0, 3.2, 2.0);
+        camera.lookAt(-12.3, 4.2, 2.0);
+      }
+
+      renderer.render(scene, camera);
     }
   </script>
 </body>
 </html>
+
