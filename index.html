@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Our Multiplayer 3D Museum & Cinema 🏛️✨</title>
+  <title>Nobita & Shizuka 3D Museum & Cinema 🏛️✨</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-  <!-- Three.js 3D Engine & PeerJS WebRTC P2P CDN -->
+  <!-- Three.js 3D Engine & PeerJS CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 
@@ -25,7 +25,7 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background: #090a0f;
+      background: #14161f;
       font-family: 'Poppins', sans-serif;
     }
     #canvas3d {
@@ -34,11 +34,19 @@
       display: block;
     }
 
-    /* Lobby Room Joiner */
+    /* Full Screen Touch Camera Zone */
+    #touchLookZone {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      touch-action: none;
+    }
+
+    /* Lobby Screen */
     #lobbyScreen {
       position: absolute;
       inset: 0;
-      background: radial-gradient(circle at center, #1a1c2b 0%, #06070a 100%);
+      background: radial-gradient(circle at center, #232738 0%, #0d0f17 100%);
       z-index: 100;
       display: flex;
       flex-direction: column;
@@ -49,54 +57,61 @@
       text-align: center;
     }
     .lobby-box {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      padding: 24px;
-      border-radius: 24px;
-      backdrop-filter: blur(14px);
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 26px 20px;
+      border-radius: 26px;
+      backdrop-filter: blur(16px);
       max-width: 340px;
       width: 100%;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.5);
     }
     .lobby-btn {
       width: 100%;
-      background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
-      color: #fff;
+      background: linear-gradient(135deg, #ffd32a 0%, #ffa801 100%);
+      color: #1e272e;
       border: none;
       padding: 13px;
       border-radius: 30px;
-      font-weight: 700;
+      font-weight: 800;
       font-size: 15px;
-      margin-top: 12px;
+      margin-top: 14px;
       cursor: pointer;
     }
+    .lobby-btn.girl-btn {
+      background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+      color: #fff;
+      margin-top: 10px;
+    }
 
-    /* Top HUD / Multiplayer Status */
+    /* Top HUD */
     #topHud {
       position: absolute;
       top: 15px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(15, 16, 25, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(20, 22, 34, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       backdrop-filter: blur(10px);
       color: #fff;
-      padding: 8px 18px;
+      padding: 7px 18px;
       border-radius: 30px;
       font-size: 12px;
       z-index: 40;
       display: flex;
       align-items: center;
       gap: 10px;
+      pointer-events: none;
     }
     .status-dot {
       width: 8px;
       height: 8px;
-      background: #2ed573;
+      background: #ffd32a;
       border-radius: 50%;
-      box-shadow: 0 0 8px #2ed573;
+      box-shadow: 0 0 8px #ffd32a;
     }
 
-    /* Mobile Joystick */
+    /* Joystick on Bottom Left */
     #joystickZone {
       position: absolute;
       bottom: 25px;
@@ -110,8 +125,8 @@
       position: relative;
       width: 100%;
       height: 100%;
-      background: rgba(255, 255, 255, 0.07);
-      border: 2px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(255, 255, 255, 0.3);
       border-radius: 50%;
       backdrop-filter: blur(8px);
     }
@@ -120,15 +135,15 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 45px;
-      height: 45px;
-      background: linear-gradient(135deg, #ff758c, #ff7eb3);
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #ffd32a, #ffa801);
       border-radius: 50%;
-      box-shadow: 0 4px 15px rgba(255, 117, 140, 0.6);
+      box-shadow: 0 4px 15px rgba(255, 168, 1, 0.6);
       pointer-events: none;
     }
 
-    /* Right Action Deck (Mic, Emotes, Sit) */
+    /* Right Action Deck */
     .action-dock {
       position: absolute;
       bottom: 25px;
@@ -142,11 +157,11 @@
       width: 48px;
       height: 48px;
       border-radius: 50%;
-      border: 2px solid rgba(255, 255, 255, 0.25);
-      background: rgba(20, 22, 34, 0.85);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      background: rgba(24, 27, 40, 0.9);
       backdrop-filter: blur(10px);
       color: #fff;
-      font-size: 18px;
+      font-size: 19px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -156,16 +171,16 @@
     .dock-btn.active-mic {
       background: #2ed573;
       border-color: #2ed573;
-      box-shadow: 0 0 15px rgba(46, 213, 115, 0.6);
+      box-shadow: 0 0 15px rgba(46, 213, 115, 0.7);
     }
 
-    /* Emote Wheel Popup */
+    /* Emotes Wheel */
     #emoteWheel {
       position: absolute;
       bottom: 85px;
       right: 25px;
-      background: rgba(18, 20, 32, 0.95);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(20, 23, 35, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       border-radius: 20px;
       padding: 10px 14px;
       display: none;
@@ -180,7 +195,7 @@
     }
     .emote-item:active { transform: scale(1.3); }
 
-    /* Interaction Prompt Pop */
+    /* Interaction Prompt */
     #interactPrompt {
       position: absolute;
       bottom: 95px;
@@ -190,14 +205,14 @@
       display: none;
     }
     .action-bubble {
-      background: #ffd1dc;
-      color: #1e1e2f;
+      background: #ffeaa7;
+      color: #2d3436;
       border: none;
       padding: 12px 24px;
       border-radius: 30px;
       font-weight: 800;
       font-size: 13.5px;
-      box-shadow: 0 8px 20px rgba(255, 209, 220, 0.5);
+      box-shadow: 0 8px 25px rgba(255, 234, 167, 0.6);
       cursor: pointer;
     }
 
@@ -207,8 +222,8 @@
       bottom: 30px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(15, 16, 25, 0.9);
-      border: 2px solid rgba(255, 255, 255, 0.25);
+      background: rgba(18, 20, 30, 0.92);
+      border: 2px solid rgba(255, 255, 255, 0.3);
       border-radius: 40px;
       padding: 8px 20px;
       display: none;
@@ -277,12 +292,12 @@
       width: 90%;
       max-width: 360px;
       background: #171822;
-      border: 2px solid #ff758c;
+      border: 2px solid #ffd32a;
       border-radius: 24px;
       padding: 26px 20px;
       text-align: center;
       color: #fff;
-      box-shadow: 0 15px 50px rgba(255, 117, 140, 0.3);
+      box-shadow: 0 15px 50px rgba(255, 211, 42, 0.35);
       z-index: 95;
       display: none;
     }
@@ -311,21 +326,24 @@
 </head>
 <body>
 
+  <!-- Touch Look Swipe Area -->
+  <div id="touchLookZone"></div>
+
   <!-- Lobby Screen -->
   <div id="lobbyScreen">
     <div class="lobby-box">
-      <div style="font-size: 45px; margin-bottom: 8px;">🏛️👩‍❤️‍👨</div>
-      <h2 style="font-family:'Playfair Display',serif; color:#ffd1dc; margin-bottom: 8px;">Our 3D Gallery</h2>
-      <p style="font-size: 13px; color: #bbb; margin-bottom: 20px;">Dono saath join ho kar live walk, voice call aur theatre movie enjoy karo!</p>
-      <button class="lobby-btn" onclick="startAsHost()">1. Create Room (Boy) 🤵</button>
-      <button class="lobby-btn" style="background:linear-gradient(135deg, #70a1ff, #1e90ff); margin-top: 10px;" onclick="startAsPartner()">2. Join Room (Girl) 💃</button>
+      <div style="font-size: 45px; margin-bottom: 8px;">🏛️👓🎀</div>
+      <h2 style="font-family:'Playfair Display',serif; color:#ffeaa7; margin-bottom: 6px;">Nobita & Shizuka Museum</h2>
+      <p style="font-size: 12.5px; color: #ccc; margin-bottom: 18px;">Swipe screen to look around 360°. Live mic & synchronized theatre included!</p>
+      <button class="lobby-btn" onclick="startAsHost()">1. Nobita (Host Boy) 👓</button>
+      <button class="lobby-btn girl-btn" onclick="startAsPartner()">2. Shizuka (Join Girl) 🎀</button>
     </div>
   </div>
 
   <!-- HUD -->
   <div id="topHud">
     <div class="status-dot"></div>
-    <span id="hudMsg">Waiting for partner to join...</span>
+    <span id="hudMsg">Waiting for Shizuka / Nobita...</span>
   </div>
 
   <!-- Joystick -->
@@ -346,7 +364,7 @@
     <div class="emote-item" onclick="triggerEmote('dance')">💃</div>
     <div class="emote-item" onclick="triggerEmote('wave')">👋</div>
     <div class="emote-item" onclick="triggerEmote('heart')">💖</div>
-    <div class="emote-item" onclick="triggerEmote('kiss')">💋</div>
+    <div class="emote-item" onclick="triggerEmote('bow')">🙇‍♂️</div>
   </div>
 
   <!-- Interaction Prompt -->
@@ -372,7 +390,7 @@
     <div style="font-size: 45px; margin-bottom: 5px;">💍✨</div>
     <h2 style="font-family: 'Playfair Display', serif; color: #ffd1dc; margin-bottom: 10px;">The Most Special Art</h2>
     <p style="font-size: 13.5px; color: #ccc; line-height: 1.5; margin-bottom: 20px;">
-      "Duniya ki har painting ek taraf, aur tumhari muskaan ek taraf... Will you be mine forever? 💖"
+      "Nobita aur Shizuka ki tarah... Will you be mine forever? 💖"
     </p>
     <div style="display: flex; justify-content: center; gap: 15px; align-items: center; min-height: 50px; position: relative;">
       <button class="prop-btn-yes" id="yesBtn" onclick="onProposalYes()">YES! 🥰</button>
@@ -394,8 +412,13 @@
     let peerConn = null;
     let localStream = null;
     let isMicOn = false;
-    let myRole = 'host'; // 'host' (Boy) or 'client' (Girl)
+    let myRole = 'host'; // 'host' = Nobita, 'client' = Shizuka
     const ROOM_ID = "special-one-love-room-998877";
+
+    /* Camera Orbit / Swipe Angles */
+    let camPitch = 0.25; // Vertical tilt
+    let camYaw = 0;      // Horizontal rotation
+    let camDistance = 5.2;
 
     function startAsHost() {
       myRole = 'host';
@@ -407,7 +430,7 @@
     function startAsPartner() {
       myRole = 'client';
       document.getElementById('lobbyScreen').style.display = 'none';
-      initPeer(null); // Random peer ID, connects to host
+      initPeer(null);
       init3D();
     }
 
@@ -416,7 +439,6 @@
 
       peer.on('open', (id) => {
         if (myRole === 'client') {
-          // Connect to Host
           peerConn = peer.connect(ROOM_ID);
           setupDataConnection();
         }
@@ -427,7 +449,6 @@
         setupDataConnection();
       });
 
-      // Answer incoming Voice Audio Call
       peer.on('call', (call) => {
         navigator.mediaDevices.getUserMedia({ audio: true, video: false })
           .then((stream) => {
@@ -437,18 +458,17 @@
               document.getElementById('remoteAudio').srcObject = remoteStream;
             });
           })
-          .catch(e => console.log("Mic permission denied", e));
+          .catch(e => console.log("Mic call failed", e));
       });
     }
 
     function setupDataConnection() {
       peerConn.on('open', () => {
-        document.getElementById('hudMsg').innerText = "Partner Connected! 💖";
+        document.getElementById('hudMsg').innerText = myRole === 'host' ? "Shizuka Joined! 🎀" : "Nobita Connected! 👓";
         document.querySelector('.status-dot').style.background = "#2ed573";
       });
 
       peerConn.on('data', (data) => {
-        // Handle incoming sync packets
         if (data.type === 'move') {
           if (remoteAvatar) {
             remoteAvatar.position.set(data.x, data.y, data.z);
@@ -483,7 +503,6 @@
       }
     }
 
-    /* Live Mic Toggle */
     function toggleMic() {
       const btn = document.getElementById('micBtn');
       if (!isMicOn) {
@@ -494,7 +513,6 @@
             btn.classList.add('active-mic');
             btn.innerText = "🎙️";
 
-            // Call partner with voice stream
             if (peerConn && peerConn.peer) {
               const call = peer.call(peerConn.peer, stream);
               call.on('stream', (remStream) => {
@@ -503,7 +521,7 @@
             }
           })
           .catch(err => {
-            alert("Mic permission allow karni hogi call ke liye!");
+            alert("Voice chat ke liye browser me mic allow karo!");
           });
       } else {
         if (localStream) {
@@ -514,7 +532,61 @@
         btn.innerText = "🎤";
       }
     }
-          /* Three.js Scene Variables */
+
+    /* Screen Swipe Camera Rotation (Touch + Mouse Support) */
+    function setupCameraLookSwipe() {
+      const touchZone = document.getElementById('touchLookZone');
+      let isTouching = false;
+      let lastX = 0, lastY = 0;
+
+      touchZone.addEventListener('touchstart', (e) => {
+        // Exclude touches on bottom-left joystick zone
+        const t = e.touches[0];
+        if (t.clientX < 150 && t.clientY > window.innerHeight - 150) return;
+        isTouching = true;
+        lastX = t.clientX;
+        lastY = t.clientY;
+      }, { passive: false });
+
+      touchZone.addEventListener('touchmove', (e) => {
+        if (!isTouching) return;
+        const t = e.touches[0];
+        const dx = t.clientX - lastX;
+        const dy = t.clientY - lastY;
+        lastX = t.clientX;
+        lastY = t.clientY;
+
+        camYaw -= dx * 0.007; // Rotate left/right
+        camPitch += dy * 0.005; // Tilt up/down
+        camPitch = Math.max(0.05, Math.min(1.1, camPitch)); // Clamp angles
+      }, { passive: false });
+
+      const endTouch = () => { isTouching = false; };
+      touchZone.addEventListener('touchend', endTouch);
+      touchZone.addEventListener('touchcancel', endTouch);
+
+      // Desktop Mouse Look Support
+      let isMouseDown = false;
+      window.addEventListener('mousedown', (e) => {
+        if (e.clientX < 150 && e.clientY > window.innerHeight - 150) return;
+        isMouseDown = true;
+        lastX = e.clientX;
+        lastY = e.clientY;
+      });
+      window.addEventListener('mousemove', (e) => {
+        if (!isMouseDown) return;
+        const dx = e.clientX - lastX;
+        const dy = e.clientY - lastY;
+        lastX = e.clientX;
+        lastY = e.clientY;
+
+        camYaw -= dx * 0.006;
+        camPitch += dy * 0.004;
+        camPitch = Math.max(0.05, Math.min(1.1, camPitch));
+      });
+      window.addEventListener('mouseup', () => { isMouseDown = false; });
+    }
+          /* Three.js Engine Variables */
     let scene, camera, renderer;
     let localAvatar, remoteAvatar;
     let legLeft, legRight, armLeft, armRight;
@@ -537,225 +609,422 @@
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
       scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x090a0f);
-      scene.fog = new THREE.FogExp2(0x090a0f, 0.022);
+      scene.background = new THREE.Color(0x191c29);
+      scene.fog = new THREE.FogExp2(0x191c29, 0.018);
 
-      camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+      camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 120);
 
-      const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+      // Bright Gallery Lighting
+      const ambient = new THREE.AmbientLight(0xfff7ea, 0.95);
       scene.add(ambient);
 
-      buildGalleryRoom();
+      const hemiLight = new THREE.HemisphereLight(0xffeedd, 0x334466, 0.6);
+      scene.add(hemiLight);
+
+      buildLuxuryGallery();
+      buildCrystalChandelier();
       buildCinemaScreenAndSofa();
-      createMultiplayerAvatars();
+      createNobitaAndShizuka();
       setupJoystick();
+      setupCameraLookSwipe();
       setupProposalButtons();
 
       window.addEventListener('resize', onWindowResize);
       animate();
     }
 
-    function buildGalleryRoom() {
+    /* Luxury Bright Gallery Hall */
+    function buildLuxuryGallery() {
       const textureLoader = new THREE.TextureLoader();
 
-      // Floor
-      const floorGeo = new THREE.PlaneGeometry(26, 75);
-      const floorMat = new THREE.MeshStandardMaterial({ color: 0x141211, roughness: 0.35, metalness: 0.25 });
+      // Polished Reflective Marble Floor
+      const floorGeo = new THREE.PlaneGeometry(28, 75);
+      const floorMat = new THREE.MeshStandardMaterial({ 
+        color: 0x242838, 
+        roughness: 0.15, 
+        metalness: 0.35 
+      });
       const floor = new THREE.Mesh(floorGeo, floorMat);
       floor.rotation.x = -Math.PI / 2;
       scene.add(floor);
 
-      // Ceiling
-      const ceilGeo = new THREE.PlaneGeometry(26, 75);
-      const ceilMat = new THREE.MeshStandardMaterial({ color: 0x08090d });
+      // Elegant White Ceiling
+      const ceilGeo = new THREE.PlaneGeometry(28, 75);
+      const ceilMat = new THREE.MeshStandardMaterial({ color: 0x2d3245, roughness: 0.9 });
       const ceiling = new THREE.Mesh(ceilGeo, ceilMat);
       ceiling.rotation.x = Math.PI / 2;
-      ceiling.position.y = 8.5;
+      ceiling.position.y = 9.2;
       scene.add(ceiling);
 
-      // Walls
-      const wallMat = new THREE.MeshStandardMaterial({ color: 0x181a24, roughness: 0.8 });
-      
-      const wallLeft = new THREE.Mesh(new THREE.BoxGeometry(0.8, 8.5, 75), wallMat);
-      wallLeft.position.set(-13, 4.25, 0);
+      // Warm Modern Gallery Walls
+      const wallMat = new THREE.MeshStandardMaterial({ color: 0xe6e3dc, roughness: 0.6 });
+
+      const wallLeft = new THREE.Mesh(new THREE.BoxGeometry(0.8, 9.2, 75), wallMat);
+      wallLeft.position.set(-14, 4.6, 0);
       scene.add(wallLeft);
 
-      const wallRight = new THREE.Mesh(new THREE.BoxGeometry(0.8, 8.5, 75), wallMat);
-      wallRight.position.set(13, 4.25, 0);
+      const wallRight = new THREE.Mesh(new THREE.BoxGeometry(0.8, 9.2, 75), wallMat);
+      wallRight.position.set(14, 4.6, 0);
       scene.add(wallRight);
 
-      const wallBack = new THREE.Mesh(new THREE.BoxGeometry(26, 8.5, 0.8), wallMat);
-      wallBack.position.set(0, 4.25, 37.5);
+      const wallBack = new THREE.Mesh(new THREE.BoxGeometry(28, 9.2, 0.8), wallMat);
+      wallBack.position.set(0, 4.6, 37.5);
       scene.add(wallBack);
 
-      const wallFront = new THREE.Mesh(new THREE.BoxGeometry(26, 8.5, 0.8), wallMat);
-      wallFront.position.set(0, 4.25, -37.5);
+      const wallFront = new THREE.Mesh(new THREE.BoxGeometry(28, 9.2, 0.8), wallMat);
+      wallFront.position.set(0, 4.6, -37.5);
       scene.add(wallFront);
 
-      // Photo Frames
+      // Photo Frames Configuration
       const frameData = [
-        { x: -12.5, z: 22, rotY: Math.PI / 2, src: 'photo1.jpg', label: "Our Beautiful Beginning 🌸" },
-        { x: 12.5, z: 22, rotY: -Math.PI / 2, src: 'photo2.jpg', label: "That Pure Sweet Smile ✨" },
-        { x: -12.5, z: -18, rotY: Math.PI / 2, src: 'photo3.jpg', label: "Favorite Adventures Together 🚗" },
-        { x: 12.5, z: -18, rotY: -Math.PI / 2, src: 'photo4.jpg', label: "Unbreakable Connection ♾️" },
+        { x: -13.5, z: 22, rotY: Math.PI / 2, src: 'photo1.jpg', label: "Our Beautiful Beginning 🌸" },
+        { x: 13.5, z: 22, rotY: -Math.PI / 2, src: 'photo2.jpg', label: "That Pure Sweet Smile ✨" },
+        { x: -13.5, z: -18, rotY: Math.PI / 2, src: 'photo3.jpg', label: "Favorite Memories Together 🚗" },
+        { x: 13.5, z: -18, rotY: -Math.PI / 2, src: 'photo4.jpg', label: "Unbreakable Connection ♾️" },
         { x: 0, z: -37, rotY: 0, src: 'photo1.jpg', label: "Special Secret Spotlight 💍", isProposal: true }
       ];
 
       frameData.forEach((data) => {
-        const spot = new THREE.SpotLight(0xffecd2, 2.2, 14, Math.PI / 4, 0.4);
-        spot.position.set(data.x * 0.7, 7.5, data.z);
-        spot.target.position.set(data.x, 3.5, data.z);
+        // Bright Warm Spotlight on Every Photo
+        const spot = new THREE.SpotLight(0xfff1cf, 3.2, 16, Math.PI / 3.8, 0.45);
+        spot.position.set(data.x * 0.7, 8.2, data.z);
+        spot.target.position.set(data.x, 3.8, data.z);
         scene.add(spot);
         scene.add(spot.target);
 
+        // Golden Frame Border
         const border = new THREE.Mesh(
-          new THREE.BoxGeometry(4.2, 5.2, 0.15),
-          new THREE.MeshStandardMaterial({ color: 0xd4af37, roughness: 0.3, metalness: 0.8 })
+          new THREE.BoxGeometry(4.4, 5.4, 0.15),
+          new THREE.MeshStandardMaterial({ color: 0xd4af37, roughness: 0.25, metalness: 0.9 })
         );
-        border.position.set(data.x, 3.5, data.z);
+        border.position.set(data.x, 3.8, data.z);
         border.rotation.y = data.rotY;
         scene.add(border);
 
+        // Image Canvas
         const photoTex = textureLoader.load(data.src);
         const pic = new THREE.Mesh(
-          new THREE.PlaneGeometry(3.8, 4.8),
+          new THREE.PlaneGeometry(4.0, 5.0),
           new THREE.MeshBasicMaterial({ map: photoTex })
         );
-        pic.position.set(data.x + (data.x > 0 ? -0.1 : (data.x < 0 ? 0.1 : 0)), 3.5, data.z + (data.z === -37 ? 0.1 : 0));
+        pic.position.set(data.x + (data.x > 0 ? -0.1 : (data.x < 0 ? 0.1 : 0)), 3.8, data.z + (data.z === -37 ? 0.1 : 0));
         pic.rotation.y = data.rotY;
         scene.add(pic);
 
         frames.push({ x: data.x, z: data.z, src: data.src, label: data.label, isProposal: data.isProposal });
       });
-
-      // Ceiling Spotlights
-      for (let z = 28; z >= -28; z -= 14) {
-        const pLight = new THREE.PointLight(0xffd5b8, 0.8, 15);
-        pLight.position.set(0, 7.5, z);
-        scene.add(pLight);
-      }
     }
 
+    /* Grand Crystal Golden Chandelier (Jhummar) */
+    function buildCrystalChandelier() {
+      const jhummar = new THREE.Group();
+      jhummar.position.set(0, 8.8, 4);
+
+      const goldMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.95, roughness: 0.15 });
+      const crystalMat = new THREE.MeshStandardMaterial({ 
+        color: 0xffffff, 
+        metalness: 0.1, 
+        roughness: 0.05, 
+        transparent: true, 
+        opacity: 0.85 
+      });
+
+      // Ceiling Mounting Chain & Base
+      const baseMesh = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 0.2, 16), goldMat);
+      jhummar.add(baseMesh);
+
+      const rodMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 1.2, 8), goldMat);
+      rodMesh.position.y = -0.6;
+      jhummar.add(rodMesh);
+
+      // Ring 1 (Top Tier)
+      const ring1 = new THREE.Mesh(new THREE.TorusGeometry(2.2, 0.12, 12, 32), goldMat);
+      ring1.rotation.x = Math.PI / 2;
+      ring1.position.y = -1.2;
+      jhummar.add(ring1);
+
+      // Ring 2 (Middle Tier)
+      const ring2 = new THREE.Mesh(new THREE.TorusGeometry(1.4, 0.1, 12, 28), goldMat);
+      ring2.rotation.x = Math.PI / 2;
+      ring2.position.y = -1.9;
+      jhummar.add(ring2);
+
+      // Ring 3 (Bottom Tier)
+      const ring3 = new THREE.Mesh(new THREE.TorusGeometry(0.7, 0.08, 12, 20), goldMat);
+      ring3.rotation.x = Math.PI / 2;
+      ring3.position.y = -2.5;
+      jhummar.add(ring3);
+
+      // Hanging Crystals Droplets
+      const addCrystals = (radius, count, yPos, height) => {
+        for (let i = 0; i < count; i++) {
+          const angle = (i / count) * Math.PI * 2;
+          const drop = new THREE.Mesh(new THREE.ConeGeometry(0.12, height, 6), crystalMat);
+          drop.position.set(Math.cos(angle) * radius, yPos, Math.sin(angle) * radius);
+          drop.rotation.x = Math.PI;
+          jhummar.add(drop);
+        }
+      };
+
+      addCrystals(2.2, 16, -1.6, 0.65);
+      addCrystals(1.4, 10, -2.2, 0.55);
+      addCrystals(0.7, 6, -2.8, 0.5);
+
+      // Jhummar Core Glowing Chandelier Light
+      const jhummarLight = new THREE.PointLight(0xffe6a3, 3.8, 32);
+      jhummarLight.position.set(0, -2.0, 0);
+      jhummar.add(jhummarLight);
+
+      scene.add(jhummar);
+    }
+
+    /* Giant TV Screen & Couple Lounge Sofa */
     function buildCinemaScreenAndSofa() {
       videoTexture = new THREE.VideoTexture(videoElement);
       videoTexture.minFilter = THREE.LinearFilter;
       videoTexture.magFilter = THREE.LinearFilter;
       videoTexture.format = THREE.RGBAFormat;
 
-      // TV Frame
+      // Modern Ultra-Thin TV Bezel
       const tvFrame = new THREE.Mesh(
-        new THREE.BoxGeometry(0.3, 7.2, 12.2),
-        new THREE.MeshStandardMaterial({ color: 0x111115, roughness: 0.2, metalness: 0.9 })
+        new THREE.BoxGeometry(0.3, 7.6, 13.2),
+        new THREE.MeshStandardMaterial({ color: 0x0f1118, roughness: 0.1, metalness: 0.95 })
       );
-      tvFrame.position.set(-12.5, 4.3, 2);
+      tvFrame.position.set(-13.5, 4.6, 2);
       scene.add(tvFrame);
 
-      // TV Display Mesh
       const tvScreen = new THREE.Mesh(
-        new THREE.PlaneGeometry(11.8, 6.8),
+        new THREE.PlaneGeometry(12.8, 7.2),
         new THREE.MeshBasicMaterial({ map: videoTexture })
       );
-      tvScreen.position.set(-12.3, 4.3, 2);
+      tvScreen.position.set(-13.3, 4.6, 2);
       tvScreen.rotation.y = Math.PI / 2;
       scene.add(tvScreen);
 
-      // Lounge Sofa
+      // Cinema Spotlight
+      const tvSpot = new THREE.SpotLight(0xfff7e6, 2.5, 18, Math.PI / 3, 0.5);
+      tvSpot.position.set(-5, 8.5, 2);
+      tvSpot.target = tvScreen;
+      scene.add(tvSpot);
+
+      // Royal Crimson Velvet Lounge Sofa
       const sofaGroup = new THREE.Group();
       sofaGroup.position.set(-5.5, 0, 2);
       sofaGroup.rotation.y = Math.PI / 2;
 
-      const sofaMat = new THREE.MeshStandardMaterial({ color: 0x8b0000, roughness: 0.6 });
+      const sofaMat = new THREE.MeshStandardMaterial({ color: 0x8a1524, roughness: 0.5 });
 
-      const sofaSeat = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.6, 1.8), sofaMat);
+      const sofaSeat = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.6, 1.8), sofaMat);
       sofaSeat.position.set(0, 0.5, 0);
       sofaGroup.add(sofaSeat);
 
-      const sofaBack = new THREE.Mesh(new THREE.BoxGeometry(4.2, 1.4, 0.5), sofaMat);
+      const sofaBack = new THREE.Mesh(new THREE.BoxGeometry(4.4, 1.4, 0.5), sofaMat);
       sofaBack.position.set(0, 1.4, 0.7);
       sofaGroup.add(sofaBack);
 
-      const armMat = new THREE.MeshStandardMaterial({ color: 0x660000 });
+      const armMat = new THREE.MeshStandardMaterial({ color: 0x610c18 });
       const sofaArmL = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.1, 1.8), armMat);
-      sofaArmL.position.set(-2.2, 0.9, 0);
+      sofaArmL.position.set(-2.3, 0.9, 0);
       sofaGroup.add(sofaArmL);
 
       const sofaArmR = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.1, 1.8), armMat);
-      sofaArmR.position.set(2.2, 0.9, 0);
+      sofaArmR.position.set(2.3, 0.9, 0);
       sofaGroup.add(sofaArmR);
 
       scene.add(sofaGroup);
-
       frames.push({ x: -5.5, z: 2, isSofa: true, label: "Sit & Watch Movie Together 🍿" });
-        }
-          /* 3D Avatars Generation */
-    function createMultiplayerAvatars() {
-      const skinMat = new THREE.MeshStandardMaterial({ color: 0xffd5b8 });
-      const boyCloth = new THREE.MeshStandardMaterial({ color: 0x222f3e });
-      const girlDress = new THREE.MeshStandardMaterial({ color: 0xff758c });
-      const pantsMat = new THREE.MeshStandardMaterial({ color: 0x576574 });
-      const legGeo = new THREE.CylinderGeometry(0.09, 0.09, 0.7, 8);
-      const armGeo = new THREE.CylinderGeometry(0.07, 0.07, 0.65, 8);
+    }
+          /* 3D Nobita & Shizuka Cartoon Characters Generator */
+    function createNobitaMesh() {
+      const g = new THREE.Group();
 
-      // Local Avatar (Tujhe jo control karna hai)
-      localAvatar = new THREE.Group();
-      const myCloth = (myRole === 'host') ? boyCloth : girlDress;
+      const skinMat = new THREE.MeshStandardMaterial({ color: 0xffd8b8 });
+      const yellowShirt = new THREE.MeshStandardMaterial({ color: 0xffd32a, roughness: 0.4 });
+      const blueShorts = new THREE.MeshStandardMaterial({ color: 0x1e3799, roughness: 0.5 });
+      const hairMat = new THREE.MeshStandardMaterial({ color: 0x1e272e, roughness: 0.8 });
+      const glassesMat = new THREE.MeshStandardMaterial({ color: 0x000000, metalness: 0.8 });
+      const whiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
 
-      const head = new THREE.Mesh(new THREE.SphereGeometry(0.32, 16, 16), skinMat);
+      // Head
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.38, 16, 16), skinMat);
+      head.position.y = 2.05;
+      g.add(head);
+
+      // Nobita Hair
+      const hair = new THREE.Mesh(new THREE.SphereGeometry(0.40, 16, 16, 0, Math.PI * 2, 0, Math.PI / 1.7), hairMat);
+      hair.position.set(0, 2.15, 0);
+      g.add(hair);
+
+      // Round Glasses
+      const glassL = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.025, 8, 16), glassesMat);
+      glassL.position.set(-0.14, 2.05, 0.36);
+      g.add(glassL);
+
+      const glassR = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.025, 8, 16), glassesMat);
+      glassR.position.set(0.14, 2.05, 0.36);
+      g.add(glassR);
+
+      const bridge = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.1, 6), glassesMat);
+      bridge.rotation.z = Math.PI / 2;
+      bridge.position.set(0, 2.05, 0.36);
+      g.add(bridge);
+
+      // Yellow Polo Shirt
+      const body = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.36, 0.95, 12), yellowShirt);
+      body.position.y = 1.35;
+      g.add(body);
+
+      // White Collar
+      const collar = new THREE.Mesh(new THREE.TorusGeometry(0.24, 0.05, 8, 16), whiteMat);
+      collar.rotation.x = Math.PI / 2;
+      collar.position.set(0, 1.8, 0);
+      g.add(collar);
+
+      // Blue Shorts & Legs
+      const pants = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.37, 0.45, 12), blueShorts);
+      pants.position.y = 0.85;
+      g.add(pants);
+
+      const legGeo = new THREE.CylinderGeometry(0.09, 0.09, 0.65, 8);
+      const lLeg = new THREE.Mesh(legGeo, skinMat);
+      lLeg.position.set(-0.16, 0.4, 0);
+      g.add(lLeg);
+
+      const rLeg = new THREE.Mesh(legGeo, skinMat);
+      rLeg.position.set(0.16, 0.4, 0);
+      g.add(rLeg);
+
+      // White Socks / Blue Shoes
+      const shoeGeo = new THREE.BoxGeometry(0.2, 0.14, 0.32);
+      const shoeMat = new THREE.MeshStandardMaterial({ color: 0x3867d6 });
+      const shoeL = new THREE.Mesh(shoeGeo, shoeMat);
+      shoeL.position.set(-0.16, 0.07, 0.05);
+      g.add(shoeL);
+      const shoeR = new THREE.Mesh(shoeGeo, shoeMat);
+      shoeR.position.set(0.16, 0.07, 0.05);
+      g.add(shoeR);
+
+      // Arms
+      const armGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.65, 8);
+      const lArm = new THREE.Mesh(armGeo, yellowShirt);
+      lArm.position.set(-0.44, 1.4, 0);
+      g.add(lArm);
+
+      const rArm = new THREE.Mesh(armGeo, yellowShirt);
+      rArm.position.set(0.44, 1.4, 0);
+      g.add(rArm);
+
+      return { group: g, legL: lLeg, legR: rLeg, armL: lArm, armR: rArm };
+    }
+
+    function createShizukaMesh() {
+      const g = new THREE.Group();
+
+      const skinMat = new THREE.MeshStandardMaterial({ color: 0xffd8b8 });
+      const pinkDress = new THREE.MeshStandardMaterial({ color: 0xff6b81, roughness: 0.4 });
+      const hairMat = new THREE.MeshStandardMaterial({ color: 0x2d142c, roughness: 0.7 });
+      const whiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+
+      // Head
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.36, 16, 16), skinMat);
       head.position.y = 1.95;
-      localAvatar.add(head);
+      g.add(head);
 
-      const body = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.35, 0.9, 12), myCloth);
+      // Shizuka Hair
+      const hair = new THREE.Mesh(new THREE.SphereGeometry(0.39, 16, 16, 0, Math.PI * 2, 0, Math.PI / 1.7), hairMat);
+      hair.position.set(0, 2.05, 0);
+      g.add(hair);
+
+      // Twin Pigtails
+      const pigtailGeo = new THREE.CylinderGeometry(0.09, 0.04, 0.45, 8);
+      const pigL = new THREE.Mesh(pigtailGeo, hairMat);
+      pigL.position.set(-0.4, 1.9, -0.15);
+      pigL.rotation.z = 0.5;
+      g.add(pigL);
+
+      const pigR = new THREE.Mesh(pigtailGeo, hairMat);
+      pigR.position.set(0.4, 1.9, -0.15);
+      pigR.rotation.z = -0.5;
+      g.add(pigR);
+
+      // Pink Dress
+      const body = new THREE.Mesh(new THREE.ConeGeometry(0.48, 1.1, 14), pinkDress);
       body.position.y = 1.25;
-      localAvatar.add(body);
+      g.add(body);
 
-      legLeft = new THREE.Mesh(legGeo, pantsMat);
-      legLeft.position.set(-0.16, 0.45, 0);
-      localAvatar.add(legLeft);
+      // White Dress Collar
+      const collar = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.04, 8, 16), whiteMat);
+      collar.rotation.x = Math.PI / 2;
+      collar.position.set(0, 1.72, 0);
+      g.add(collar);
 
-      legRight = new THREE.Mesh(legGeo, pantsMat);
-      legRight.position.set(0.16, 0.45, 0);
-      localAvatar.add(legRight);
+      // Legs
+      const legGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.65, 8);
+      const lLeg = new THREE.Mesh(legGeo, skinMat);
+      lLeg.position.set(-0.14, 0.4, 0);
+      g.add(lLeg);
 
-      armLeft = new THREE.Mesh(armGeo, myCloth);
-      armLeft.position.set(-0.42, 1.3, 0);
-      localAvatar.add(armLeft);
+      const rLeg = new THREE.Mesh(legGeo, skinMat);
+      rLeg.position.set(0.14, 0.4, 0);
+      g.add(rLeg);
 
-      armRight = new THREE.Mesh(armGeo, myCloth);
-      armRight.position.set(0.42, 1.3, 0);
-      localAvatar.add(armRight);
+      // Pink Shoes
+      const shoeGeo = new THREE.BoxGeometry(0.18, 0.12, 0.3);
+      const shoeMat = new THREE.MeshStandardMaterial({ color: 0xff4757 });
+      const shoeL = new THREE.Mesh(shoeGeo, shoeMat);
+      shoeL.position.set(-0.14, 0.06, 0.05);
+      g.add(shoeL);
+      const shoeR = new THREE.Mesh(shoeGeo, shoeMat);
+      shoeR.position.set(0.14, 0.06, 0.05);
+      g.add(shoeR);
+
+      // Arms
+      const armGeo = new THREE.CylinderGeometry(0.07, 0.07, 0.62, 8);
+      const lArm = new THREE.Mesh(armGeo, pinkDress);
+      lArm.position.set(-0.4, 1.35, 0);
+      g.add(lArm);
+
+      const rArm = new THREE.Mesh(armGeo, pinkDress);
+      rArm.position.set(0.4, 1.35, 0);
+      g.add(rArm);
+
+      return { group: g, legL: lLeg, legR: rLeg, armL: lArm, armR: rArm };
+    }
+
+    function createNobitaAndShizuka() {
+      const nobitaObj = createNobitaMesh();
+      const shizukaObj = createShizukaMesh();
+
+      if (myRole === 'host') {
+        localAvatar = nobitaObj.group;
+        legLeft = nobitaObj.legL;
+        legRight = nobitaObj.legR;
+        armLeft = nobitaObj.armL;
+        armRight = nobitaObj.armR;
+
+        remoteAvatar = shizukaObj.group;
+        remoteLegLeft = shizukaObj.legL;
+        remoteLegRight = shizukaObj.legR;
+        remoteArmLeft = shizukaObj.armL;
+        remoteArmRight = shizukaObj.armR;
+      } else {
+        localAvatar = shizukaObj.group;
+        legLeft = shizukaObj.legL;
+        legRight = shizukaObj.legR;
+        armLeft = shizukaObj.armL;
+        armRight = shizukaObj.armR;
+
+        remoteAvatar = nobitaObj.group;
+        remoteLegLeft = nobitaObj.legL;
+        remoteLegRight = nobitaObj.legR;
+        remoteArmLeft = nobitaObj.armL;
+        remoteArmRight = nobitaObj.armR;
+      }
 
       localAvatar.position.set(myRole === 'host' ? 1.5 : -1.5, 0, 30);
-      scene.add(localAvatar);
-
-      // Remote Partner Avatar (Uski position network se sync hogi)
-      remoteAvatar = new THREE.Group();
-      const partnerCloth = (myRole === 'host') ? girlDress : boyCloth;
-
-      const rHead = new THREE.Mesh(new THREE.SphereGeometry(0.32, 16, 16), skinMat);
-      rHead.position.y = 1.95;
-      remoteAvatar.add(rHead);
-
-      const rBody = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.35, 0.9, 12), partnerCloth);
-      rBody.position.y = 1.25;
-      remoteAvatar.add(rBody);
-
-      remoteLegLeft = new THREE.Mesh(legGeo, pantsMat);
-      remoteLegLeft.position.set(-0.16, 0.45, 0);
-      remoteAvatar.add(remoteLegLeft);
-
-      remoteLegRight = new THREE.Mesh(legGeo, pantsMat);
-      remoteLegRight.position.set(0.16, 0.45, 0);
-      remoteAvatar.add(remoteLegRight);
-
-      remoteArmLeft = new THREE.Mesh(armGeo, partnerCloth);
-      remoteArmLeft.position.set(-0.42, 1.3, 0);
-      remoteAvatar.add(remoteArmLeft);
-
-      remoteArmRight = new THREE.Mesh(armGeo, partnerCloth);
-      remoteArmRight.position.set(0.42, 1.3, 0);
-      remoteAvatar.add(remoteArmRight);
-
       remoteAvatar.position.set(myRole === 'host' ? -1.5 : 1.5, 0, 30);
+
+      scene.add(localAvatar);
       scene.add(remoteAvatar);
     }
 
@@ -800,7 +1069,7 @@
       zone.addEventListener('touchcancel', stopTouch);
     }
 
-    /* Emotes Wheel System */
+    /* Emotes System */
     function toggleEmoteWheel() {
       const wheel = document.getElementById('emoteWheel');
       wheel.style.display = wheel.style.display === 'flex' ? 'none' : 'flex';
@@ -812,7 +1081,7 @@
       sendMultiplayerPacket({ type: 'emote', emote: name });
 
       if (name === 'heart') {
-        confetti({ particleCount: 20, spread: 50 });
+        confetti({ particleCount: 25, spread: 50 });
       }
 
       setTimeout(() => { currentEmote = null; }, 3500);
@@ -820,11 +1089,11 @@
 
     function playRemoteEmote(name) {
       if (name === 'heart') {
-        confetti({ particleCount: 20, spread: 50, origin: { x: 0.4 } });
+        confetti({ particleCount: 25, spread: 50, origin: { x: 0.4 } });
       }
     }
 
-    /* Proximity & Interaction */
+    /* Proximity Interaction */
     function checkInteractions() {
       if (!localAvatar || isSitting) return;
       const prompt = document.getElementById('interactPrompt');
@@ -860,7 +1129,7 @@
         sitOnSofaTogether(true);
       } else if (nearbyItem.isProposal) {
         document.getElementById('proposalCard').classList.add('active');
-        confetti({ particleCount: 30, spread: 60 });
+        confetti({ particleCount: 35, spread: 65 });
       } else {
         document.getElementById('modalImg').src = nearbyItem.src;
         document.getElementById('modalCaption').innerText = nearbyItem.label;
@@ -935,7 +1204,7 @@
         <div style="font-size: 55px; margin-bottom: 8px;">🎉💖💍</div>
         <h2 style="color: #ffd1dc; margin-bottom: 8px;">SHE SAID YES!</h2>
         <p style="font-size: 13.5px; color: #eee; margin-bottom: 18px;">
-          Hamari gallery aur cinema toh shuruat thi... Pura safar abhi baaki hai! ♾️
+          Nobita & Shizuka gallery aur cinema toh shuruat thi... Pura safar abhi baaki hai! ♾️
         </p>
         <a href="https://www.instagram.com/just_ni_07?cplk=MXM1dDI5N2s3djI1NA==" 
            target="_blank" 
@@ -951,21 +1220,30 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
-    /* Main Render & Animation Loop */
+    /* Main Render & Animation Loop with Camera Orbit */
     function animate() {
       requestAnimationFrame(animate);
 
       if (localAvatar && !isSitting) {
         if (joystickActive) {
           const speed = 0.16;
-          localAvatar.position.x += joyMove.x * speed;
-          localAvatar.position.z += joyMove.y * speed;
 
-          localAvatar.position.x = Math.max(-10.5, Math.min(10.5, localAvatar.position.x));
-          localAvatar.position.z = Math.max(-34, Math.min(34, localAvatar.position.z));
+          // Move relative to current camera yaw angle
+          const forward = -joyMove.y;
+          const side = joyMove.x;
+          
+          localAvatar.position.x += (Math.sin(camYaw) * forward + Math.cos(camYaw) * side) * speed;
+          localAvatar.position.z += (Math.cos(camYaw) * forward - Math.sin(camYaw) * side) * speed;
 
-          const angle = Math.atan2(joyMove.x, joyMove.y);
-          localAvatar.rotation.y = angle;
+          localAvatar.position.x = Math.max(-11.5, Math.min(11.5, localAvatar.position.x));
+          localAvatar.position.z = Math.max(-35, Math.min(35, localAvatar.position.z));
+
+          // Rotate character towards moving direction
+          const moveAngle = Math.atan2(
+            Math.sin(camYaw) * forward + Math.cos(camYaw) * side,
+            Math.cos(camYaw) * forward - Math.sin(camYaw) * side
+          );
+          localAvatar.rotation.y = moveAngle;
 
           walkCycle += 0.22;
           legLeft.rotation.x = Math.sin(walkCycle) * 0.65;
@@ -973,7 +1251,6 @@
           armLeft.rotation.x = -Math.sin(walkCycle) * 0.5;
           armRight.rotation.x = Math.sin(walkCycle) * 0.5;
 
-          // Send real-time packet to partner
           sendMultiplayerPacket({
             type: 'move',
             x: localAvatar.position.x,
@@ -984,7 +1261,7 @@
             legR: legRight.rotation.x
           });
         } else {
-          // Emote handling when not walking
+          // Emotes when stationary
           if (currentEmote === 'dance') {
             walkCycle += 0.3;
             armLeft.rotation.z = Math.sin(walkCycle) * 1.2;
@@ -992,7 +1269,10 @@
             localAvatar.rotation.y += 0.05;
           } else if (currentEmote === 'wave') {
             armRight.rotation.z = Math.PI - Math.sin(Date.now() * 0.01) * 0.4;
+          } else if (currentEmote === 'bow') {
+            localAvatar.rotation.x = 0.35;
           } else {
+            localAvatar.rotation.x = 0;
             legLeft.rotation.x = 0;
             legRight.rotation.x = 0;
             armLeft.rotation.x = 0;
@@ -1002,15 +1282,18 @@
           }
         }
 
-        camera.position.x = localAvatar.position.x;
-        camera.position.y = localAvatar.position.y + 3.2;
-        camera.position.z = localAvatar.position.z + 5.5;
-        camera.lookAt(localAvatar.position.x, localAvatar.position.y + 1.6, localAvatar.position.z - 3);
+        // Third-Person Orbit Camera Follow
+        const cx = localAvatar.position.x + Math.sin(camYaw) * Math.cos(camPitch) * camDistance;
+        const cy = localAvatar.position.y + Math.sin(camPitch) * camDistance + 1.8;
+        const cz = localAvatar.position.z + Math.cos(camYaw) * Math.cos(camPitch) * camDistance;
+
+        camera.position.set(cx, cy, cz);
+        camera.lookAt(localAvatar.position.x, localAvatar.position.y + 1.8, localAvatar.position.z);
 
         checkInteractions();
       } else if (isSitting) {
         camera.position.set(-1.0, 3.2, 2.0);
-        camera.lookAt(-12.3, 4.2, 2.0);
+        camera.lookAt(-13.3, 4.6, 2.0);
       }
 
       renderer.render(scene, camera);
@@ -1018,4 +1301,3 @@
   </script>
 </body>
 </html>
-
